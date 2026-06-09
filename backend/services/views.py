@@ -2,6 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from .permissions import IsServiceProviderOwner
 from .models import Service
 from .serializers import ServiceSerializer
 
@@ -26,3 +28,10 @@ class ServiceListCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+class ServiceDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+    # Anyone can view details (SAFE_METHODS), but only the owner can modify/delete
+    permission_classes = [IsServiceProviderOwner]
