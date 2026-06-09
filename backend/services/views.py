@@ -6,12 +6,21 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, DestroyAPIView
 from .permissions import IsServiceProviderOwner, IsImageOwner
 from django.shortcuts import get_object_or_404
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Service, ServiceImage
 from .serializers import *
+from .filters import ServiceFilter
 
 class ServiceListCreateView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+     
+    filterset_class = ServiceFilter 
+    search_fields = ['title', 'description', 'category__name'] 
+    ordering_fields = ['price', 'average_rating', 'created_at'] 
+    ordering = ['-created_at']
 
     def get(self, request): 
         services = Service.objects.filter(is_active=True)
