@@ -1,3 +1,4 @@
+import random
 from rest_framework import serializers
 from .models import ServiceRequest
 from services.models import Service 
@@ -6,8 +7,15 @@ from django.utils import timezone
 class ServiceRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceRequest
-        fields = ['id', 'customer', 'provider', 'service', 'description', 'preferred_date', 'address', 'status', 'agreed_price', 'completed_at', 'created_at', 'updated_at' ]
-        read_only_fields = ['id', 'customer', 'provider', 'status', 'agreed_price', 'completed_at', 'created_at', 'updated_at']
+        fields = [
+            'id', 'customer', 'provider', 'service', 'description', 'preferred_date', 
+            'address', 'status', 'agreed_price', 'start_otp', 'complete_otp', 
+            'completed_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'customer', 'provider', 'status', 'agreed_price', 
+            'start_otp', 'complete_otp', 'completed_at', 'created_at', 'updated_at'
+        ]
 
     def validate(self, attrs):
         service = attrs.get('service')
@@ -34,17 +42,31 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
             **validated_data
         )
         
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user = self.context['request'].user
+        
+        # SECURITY SHIELD: If the logged-in user is the service provider, wipe out the OTP codes from the JSON response
+        if hasattr(user, 'providerprofile') and instance.provider == user.providerprofile:
+            data['start_otp'] = None
+            data['complete_otp'] = None
+            
+        return data
+        
 
 class RequestStatusUpdateSerializer(serializers.ModelSerializer):
+    otp_code = serializers.CharField(write_only=True, required=False)
+    
     class Meta:
         model = ServiceRequest
-        fields = ['status']
+        fields = ['status', 'otp_code']
 
     def validate_status(self, value): 
         return value.upper()
 
     def update(self, instance, validated_data):
         new_status = validated_data.get('status')
+        incoming_otp = validated_data.get('otp_code')
         user = self.context['request'].user
  
         # ROLE 1: CUSTOMER OPERATION GUARD 
@@ -69,10 +91,18 @@ class RequestStatusUpdateSerializer(serializers.ModelSerializer):
                 
             if instance.status == "IN_PROGRESS" and new_status != "COMPLETED":
                 raise serializers.ValidationError("Transition Error: From IN_PROGRESS you can only transition to COMPLETED.")
-
-            # Automatically stamp completion time when entering final state
+            
+            # moving to IN_PROGRESS requires matching start_otp
+            if new_status == "IN_PROGRESS":
+                if not incoming_otp or incoming_otp != instance.start_otp:
+                    raise serializers.ValidationError({"otp_code": "Security Error: Invalid or missing Start/Arrival OTP code from the customer."})
+            
+            # Moving to COMPLETED requires matching complete_otp
             if new_status == "COMPLETED":
-                instance.completed_at = timezone.now()
+                if not incoming_otp or incoming_otp != instance.complete_otp:
+                    raise serializers.ValidationError({"otp_code": "Security Error: Invalid or missing Completion OTP code from the customer."})
+                # Automatically stamp completion time when entering final state
+                instance.completed_at = timezone.now() 
 
         else:
             raise serializers.ValidationError("Auth Error: You do not have permission to modify this service request.")
