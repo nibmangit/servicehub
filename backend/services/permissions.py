@@ -11,3 +11,12 @@ class IsServiceProviderOwner(permissions.BasePermission):
 
         # Check if the logged-in user's provider profile matches the service's provider field
         return hasattr(request.user, 'providerprofile') and obj.provider == request.user.providerprofile
+    
+    
+class IsImageOwner(permissions.BasePermission):
+    """
+    Object-level permission to allow only the service provider to delete an image.
+    """
+    def has_object_permission(self, request, view, obj):
+        # obj is a ServiceImage instance. We check ownership via obj.service.provider
+        return hasattr(request.user, 'providerprofile') and obj.service.provider == request.user.providerprofile

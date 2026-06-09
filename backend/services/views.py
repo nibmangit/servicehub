@@ -1,11 +1,14 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from .permissions import IsServiceProviderOwner
-from .models import Service
-from .serializers import ServiceSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, DestroyAPIView
+from .permissions import IsServiceProviderOwner, IsImageOwner
+from django.shortcuts import get_object_or_404
+
+from .models import Service, ServiceImage
+from .serializers import *
 
 class ServiceListCreateView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -32,6 +35,25 @@ class ServiceListCreateView(APIView):
     
 class ServiceDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Service.objects.all()
-    serializer_class = ServiceSerializer
-    # Anyone can view details (SAFE_METHODS), but only the owner can modify/delete
+    serializer_class = ServiceSerializer 
     permission_classes = [IsServiceProviderOwner]
+    
+class ServiceImageUploadView(APIView): 
+    permission_classes = [IsAuthenticated, IsServiceProviderOwner] 
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, pk): 
+        service = get_object_or_404(Service, pk=pk)
+        self.check_object_permissions(request, service)
+         
+        serializer = ServiceImageSerializer(data=request.data)
+        if serializer.is_valid(): 
+            serializer.save(service=service)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ServiceImageDeleteView(DestroyAPIView):
+    queryset = ServiceImage.objects.all() 
+    permission_classes = [IsAuthenticated, IsImageOwner]
