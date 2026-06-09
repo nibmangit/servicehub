@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.generics import RetrieveUpdateAPIView 
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from .models import ServiceRequest
-from .serializers import ServiceRequestSerializer
+from .serializers import *
 
 class RequestListCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -30,3 +31,21 @@ class RequestListCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+
+class RequestDetailUpdateView(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        # Safeguard: Ensure you can only fetch details of a request you are a party to
+        if hasattr(user, 'providerprofile'):
+            return ServiceRequest.objects.filter(Q(customer=user) | Q(provider=user.providerprofile))
+        return ServiceRequest.objects.filter(customer=user)
+
+    def get_serializer_class(self):
+        # Dynamically switch serializers based on the incoming action type
+        if self.request.method in ['PUT', 'PATCH']:
+            return RequestStatusUpdateSerializer
+        return ServiceRequestSerializer
