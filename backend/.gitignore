@@ -5,7 +5,7 @@ venv/
 
 # Django
 db.sqlite3
-
+endpoint.md
 # React
 node_modules/
 dist/
