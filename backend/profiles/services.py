@@ -7,6 +7,7 @@ def become_provider(user: User, experience="", skills=""):
         return None
 
     user.is_provider = True
+    user.is_customer = False
     user.save()
 
     provider = ProviderProfile.objects.create(
