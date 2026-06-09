@@ -2,8 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from services.models import Service
 from profiles.models import ProviderProfile
-
-# Best practice in Django: always fetch the custom user model dynamically
+ 
 User = get_user_model()
 
 class ServiceRequest(models.Model):
@@ -24,7 +23,10 @@ class ServiceRequest(models.Model):
     preferred_date = models.DateTimeField()
      
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING" )
+    agreed_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    address = models.TextField(blank=True, null=True)
  
+    completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
