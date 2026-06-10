@@ -30,16 +30,21 @@ class ProviderProfileSerializer(serializers.ModelSerializer):
         return provider_profile
     
 class UserProfileSerializer(serializers.ModelSerializer): 
-    email = serializers.EmailField(source='user.email', read_only=True) 
-    avatar = serializers.SerializerMethodField()
+    email = serializers.EmailField(source='user.email', read_only=True)  
 
     class Meta:
         model = UserProfile 
         fields = ['id', 'email', 'full_name', 'phone', 'city', 'bio', 'avatar', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
         
-    def get_avatar(self, obj):
-        if obj.avatar:
-            url, options = cloudinary_url(obj.avatar.public_id, secure=True)
-            return url
-        return None
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if instance.avatar:
+            url, _ = cloudinary_url(
+                instance.avatar.public_id,
+                secure=True
+            )
+            data["avatar"] = url
+
+        return data
