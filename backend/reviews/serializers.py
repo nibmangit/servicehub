@@ -6,6 +6,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'request', 'rating', 'comment', 'created_at', 'updated_at']
+        read_only_fields = ["created_at", "updated_at"]
 
     def validate(self, attrs):
         request_obj = attrs.get('request')

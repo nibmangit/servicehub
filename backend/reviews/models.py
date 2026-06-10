@@ -3,17 +3,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from requests.models import ServiceRequest
 
 class Review(models.Model): 
-    request = models.OneToOneField(
-        ServiceRequest,
-        on_delete=models.CASCADE,
-        related_name="review"
-    )
+    request = models.OneToOneField(ServiceRequest, on_delete=models.CASCADE, related_name="review" )
      
     rating = models.PositiveIntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(5)
-        ],
+        validators=[ MinValueValidator(1), MaxValueValidator(5) ],
         help_text="Rating score from 1 to 5 stars"
     )
     
