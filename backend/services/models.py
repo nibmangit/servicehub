@@ -2,6 +2,7 @@ from django.db import models
 from accounts.models import User
 from profiles.models import ProviderProfile
 from categories.models import Category
+from cloudinary.models import CloudinaryField
 
 
 class Service(models.Model):
@@ -40,6 +41,6 @@ class Service(models.Model):
 
 class ServiceImage(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="images" )
-    image = models.ImageField(upload_to="services/")
+    image = CloudinaryField("image")
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

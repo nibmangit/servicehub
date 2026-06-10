@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import User
-
+from cloudinary.models import CloudinaryField
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -10,7 +10,7 @@ class UserProfile(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
 
     bio = models.TextField(blank=True, null=True)
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    avatar = image = CloudinaryField("image")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
