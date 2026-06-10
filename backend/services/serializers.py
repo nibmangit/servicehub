@@ -2,9 +2,15 @@ from rest_framework import serializers
 from .models import Service, ServiceImage
 
 class ServiceImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
     class Meta:
         model = ServiceImage
         fields = ['id', 'image', 'created_at']
+        
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
 
 
 class ServiceSerializer(serializers.ModelSerializer): 

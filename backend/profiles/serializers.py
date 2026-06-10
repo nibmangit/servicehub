@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import ProviderProfile, UserProfile
 from .services import become_provider
+from cloudinary.utils import cloudinary_url
 
 class ProviderProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,9 +30,16 @@ class ProviderProfileSerializer(serializers.ModelSerializer):
         return provider_profile
     
 class UserProfileSerializer(serializers.ModelSerializer): 
-    email = serializers.EmailField(source='user.email', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True) 
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile 
         fields = ['id', 'email', 'full_name', 'phone', 'city', 'bio', 'avatar', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
+        
+    def get_avatar(self, obj):
+        if obj.avatar:
+            url, options = cloudinary_url(obj.avatar.public_id, secure=True)
+            return url
+        return None

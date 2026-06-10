@@ -44,3 +44,6 @@ class ServiceImage(models.Model):
     image = CloudinaryField("image")
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Image {self.id} - {self.service.title}"

@@ -54,13 +54,22 @@ class ServiceImageUploadView(APIView):
     def post(self, request, pk): 
         service = get_object_or_404(Service, pk=pk)
         self.check_object_permissions(request, service)
-         
-        serializer = ServiceImageSerializer(data=request.data)
-        if serializer.is_valid(): 
-            serializer.save(service=service)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        image_file = request.FILES.get("image")
+
+        if not image_file:
+            return Response(
+                {"detail": "Image file is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        image = ServiceImage.objects.create(
+            service=service,
+            image=image_file
+        )
+
+        serializer = ServiceImageSerializer(image)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
 class ServiceImageDeleteView(DestroyAPIView):

@@ -10,7 +10,7 @@ class UserProfile(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
 
     bio = models.TextField(blank=True, null=True)
-    avatar = image = CloudinaryField("image")
+    avatar = CloudinaryField("image", blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
