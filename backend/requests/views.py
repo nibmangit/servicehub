@@ -27,12 +27,20 @@ class RequestListCreateView(APIView):
     def post(self, request):
         serializer = ServiceRequestSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            service_request = serializer.save()
+            from notifications.services import create_notification
+
+            create_notification(
+                user=service_request.provider.user,
+                notification_type="REQUEST_CREATED",
+                title="New Service Request",
+                message=f"{request.user.email} requested {service_request.service.title}",
+                request=service_request
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
+     
 
 class RequestDetailUpdateView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]

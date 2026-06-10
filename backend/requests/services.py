@@ -2,6 +2,7 @@
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from .models import ServiceRequest
+from notifications.services import create_notification
 
 ALLOWED_TRANSITIONS = {
     "PENDING": ["ACCEPTED", "REJECTED"],
@@ -23,9 +24,7 @@ class ServiceRequestService:
         # 2. Validate allowed transitions
         allowed = ALLOWED_TRANSITIONS.get(current_status, [])
         if new_status not in allowed:
-            raise ValidationError(
-                f"Invalid transition: {current_status} → {new_status}"
-            )
+            raise ValidationError(f"Invalid transition: {current_status} → {new_status}")
  
         # CUSTOMER RULES 
         if request_obj.customer == user:
@@ -37,6 +36,13 @@ class ServiceRequestService:
 
             request_obj.status = "CANCELLED"
             request_obj.save()
+            create_notification(
+                user=request_obj.provider.user,
+                notification_type="REQUEST_CANCELLED",
+                title="Request Cancelled",
+                message=f"{user.email} cancelled the request",
+                request=request_obj
+            )
             return request_obj
  
         # PROVIDER RULES 
@@ -48,11 +54,36 @@ class ServiceRequestService:
                     raise ValidationError("Rejection reason required.")
 
                 request_obj.rejection_reason = rejection_reason
+                
+                create_notification(
+                    user=request_obj.customer,
+                    notification_type="REQUEST_REJECTED",
+                    title="Request Rejected",
+                    message=f"Your request was rejected: {rejection_reason}",
+                    request=request_obj
+                )
+            
+            if new_status == "ACCEPTED":
+                create_notification(
+                    user=request_obj.customer,
+                    notification_type="REQUEST_ACCEPTED",
+                    title="Request Accepted",
+                    message=f"Your request for {request_obj.service.title} was accepted",
+                    request=request_obj
+                )
 
             # IN_PROGRESS (START OTP)
             if new_status == "IN_PROGRESS":
                 if otp_code != request_obj.start_otp:
                     raise ValidationError("Invalid start OTP.")
+                
+                create_notification(
+                    user=request_obj.customer,
+                    notification_type="REQUEST_STARTED",
+                    title="Service Started",
+                    message="Your provider has started the service",
+                    request=request_obj
+                )
 
             # COMPLETED (FINAL OTP)
             if new_status == "COMPLETED":
@@ -60,6 +91,14 @@ class ServiceRequestService:
                     raise ValidationError("Invalid completion OTP.")
 
                 request_obj.completed_at = timezone.now()
+                
+                create_notification(
+                    user=request_obj.customer,
+                    notification_type="REQUEST_COMPLETED",
+                    title="Service Completed",
+                    message="Service completed. Please leave a review.",
+                    request=request_obj
+                )
 
             request_obj.status = new_status
             request_obj.save()
