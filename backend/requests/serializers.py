@@ -1,112 +1,74 @@
-import random
 from rest_framework import serializers
 from .models import ServiceRequest
-from services.models import Service 
+from .services import ServiceRequestService
 from django.utils import timezone
 
+
 class ServiceRequestSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ServiceRequest
         fields = [
-            'id', 'customer', 'provider', 'service', 'description', 'preferred_date', 
-            'address', 'status', 'agreed_price', 'start_otp', 'complete_otp', 
+            'id', 'customer', 'provider', 'service', 'description',
+            'preferred_date', 'address', 'status', 'rejection_reason',
+            'agreed_price', 'start_otp', 'complete_otp',
             'completed_at', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'id', 'customer', 'provider', 'status', 'agreed_price', 
-            'start_otp', 'complete_otp', 'completed_at', 'created_at', 'updated_at'
+            'id', 'customer', 'provider', 'status', 'rejection_reason',
+            'agreed_price', 'start_otp', 'complete_otp',
+            'completed_at', 'created_at', 'updated_at'
         ]
 
     def validate(self, attrs):
         service = attrs.get('service')
-        
-        # Self-booking prevention guard
+        preferred_date = attrs.get("preferred_date")
         user = self.context['request'].user
+
+        if not service:
+            raise serializers.ValidationError("Service is required.")
+
         if hasattr(user, 'providerprofile') and service.provider == user.providerprofile:
-            raise serializers.ValidationError("Validation Error: You cannot open a service request on your own listing.")
-            
+            raise serializers.ValidationError("You cannot book your own service.")
+
+        if not service.is_active:
+            raise serializers.ValidationError("Service is inactive.")
+
+        if not service.provider.is_available:
+            raise serializers.ValidationError("Provider unavailable.")
+
+        if preferred_date and preferred_date <= timezone.now():
+            raise serializers.ValidationError("Invalid date.")
+
         return attrs
 
     def create(self, validated_data):
-        customer = self.context['request'].user
+        user = self.context['request'].user
         service = validated_data['service']
-        
-        # Pull implicit context directly from the chosen service listing
-        provider = service.provider
-        agreed_price = service.price if service.price else 0.00
 
         return ServiceRequest.objects.create(
-            customer=customer,
-            provider=provider,
-            agreed_price=agreed_price,
+            customer=user,
+            provider=service.provider,
+            agreed_price=service.price or 0,
             **validated_data
         )
-        
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        user = self.context['request'].user
-        
-        # SECURITY SHIELD: If the logged-in user is the service provider, wipe out the OTP codes from the JSON response
-        if hasattr(user, 'providerprofile') and instance.provider == user.providerprofile:
-            data['start_otp'] = None
-            data['complete_otp'] = None
-            
-        return data
-        
 
 class RequestStatusUpdateSerializer(serializers.ModelSerializer):
+
     otp_code = serializers.CharField(write_only=True, required=False)
-    
+    rejection_reason = serializers.CharField(required=False, allow_blank=True)
+
     class Meta:
         model = ServiceRequest
-        fields = ['status', 'otp_code']
-
-    def validate_status(self, value): 
-        return value.upper()
+        fields = ['status', 'otp_code', 'rejection_reason']
 
     def update(self, instance, validated_data):
-        new_status = validated_data.get('status')
-        incoming_otp = validated_data.get('otp_code')
-        user = self.context['request'].user
- 
-        # ROLE 1: CUSTOMER OPERATION GUARD 
-        if instance.customer == user:
-            if new_status != "CANCELLED":
-                raise serializers.ValidationError("Permission Denied: As a customer, you can only transition a request to CANCELLED.")
-            
-            if instance.status in ["COMPLETED", "REJECTED"]:
-                raise serializers.ValidationError(f"Invalid Operation: Cannot cancel a request that is already {instance.status}.")
- 
-        # ROLE 2: PROVIDER OPERATION GUARD 
-        elif hasattr(user, 'providerprofile') and instance.provider == user.providerprofile:
-            if new_status == "CANCELLED":
-                raise serializers.ValidationError("Permission Denied: Providers cannot use the cancel status. Use REJECTED instead.")
-            
-            # Automated structural lifecycle rule validation
-            if instance.status == "PENDING" and new_status not in ["ACCEPTED", "REJECTED"]:
-                raise serializers.ValidationError("Transition Error: From PENDING you can only transition to ACCEPTED or REJECTED.")
-                
-            if instance.status == "ACCEPTED" and new_status != "IN_PROGRESS":
-                raise serializers.ValidationError("Transition Error: From ACCEPTED you can only transition to IN_PROGRESS.")
-                
-            if instance.status == "IN_PROGRESS" and new_status != "COMPLETED":
-                raise serializers.ValidationError("Transition Error: From IN_PROGRESS you can only transition to COMPLETED.")
-            
-            # moving to IN_PROGRESS requires matching start_otp
-            if new_status == "IN_PROGRESS":
-                if not incoming_otp or incoming_otp != instance.start_otp:
-                    raise serializers.ValidationError({"otp_code": "Security Error: Invalid or missing Start/Arrival OTP code from the customer."})
-            
-            # Moving to COMPLETED requires matching complete_otp
-            if new_status == "COMPLETED":
-                if not incoming_otp or incoming_otp != instance.complete_otp:
-                    raise serializers.ValidationError({"otp_code": "Security Error: Invalid or missing Completion OTP code from the customer."})
-                # Automatically stamp completion time when entering final state
-                instance.completed_at = timezone.now() 
+        from .services import ServiceRequestService
 
-        else:
-            raise serializers.ValidationError("Auth Error: You do not have permission to modify this service request.")
-
-        instance.status = new_status
-        instance.save()
-        return instance
+        return ServiceRequestService.change_status(
+            request_obj=instance,
+            new_status=validated_data.get("status").upper(),
+            user=self.context["request"].user,
+            otp_code=validated_data.get("otp_code"),
+            rejection_reason=validated_data.get("rejection_reason"),
+        )

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from services.models import Service
 from profiles.models import ProviderProfile
-import random
+from secrets import randbelow
  
 User = get_user_model()
 
@@ -29,7 +29,7 @@ class ServiceRequest(models.Model):
     
     start_otp = models.CharField(max_length=4, blank=True, null=True)
     complete_otp = models.CharField(max_length=4, blank=True, null=True)
- 
+    rejection_reason = models.TextField(blank=True, null=True )
     completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,9 +37,18 @@ class ServiceRequest(models.Model):
     def save(self, *args, **kwargs):
         # Automatically generate secure 4-digit strings when the request is first created
         if not self.pk: 
-            self.start_otp = f"{random.randint(1000, 9999)}"
-            self.complete_otp = f"{random.randint(1000, 9999)}"
+            self.start_otp = f"{randbelow(9000) + 1000}"
+            self.complete_otp = f"{randbelow(9000) + 1000}"
         super().save(*args, **kwargs)
+        
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["customer"]),
+            models.Index(fields=["provider"]),
+            models.Index(fields=["created_at"]),
+        ]
 
     def __str__(self):
         return f"Request #{self.id} - {self.customer.email} -> {self.status}"
