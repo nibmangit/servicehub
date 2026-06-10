@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'requests',
     'reviews',
     'categories',
+    'notifications',
 ]
 
 MIDDLEWARE = [
