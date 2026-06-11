@@ -1,3 +1,4 @@
+from django.utils import timezone 
 from rest_framework.exceptions import ValidationError
 from .models import Message
 from notifications.services import NotificationService
@@ -23,6 +24,7 @@ class ChatService:
             sender=sender,
             content=content
         )
+        conversation.save(update_fields=["updated_at"])
 
         # Determine Receiver
         receiver = (request_obj.provider.user if is_customer else request_obj.customer )
@@ -37,3 +39,18 @@ class ChatService:
         )
 
         return message
+    
+
+class ChatReadService:
+
+    @staticmethod
+    def mark_conversation_as_read(conversation, user):
+
+        messages = Message.objects.filter(
+            conversation=conversation,
+        ).exclude(sender=user)
+
+        messages.update(
+            is_read=True,
+            read_at=timezone.now()
+        )

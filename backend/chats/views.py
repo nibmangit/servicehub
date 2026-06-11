@@ -6,8 +6,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Conversation
+from .pagination import MessagePagination
+from .models import Conversation, Message
 from .serializers import *
+from .services import ChatReadService, ChatService
 
 
 class ConversationListView(APIView):
@@ -19,11 +21,15 @@ class ConversationListView(APIView):
         if hasattr(user, "providerprofile"):
             conversations = Conversation.objects.filter(
                 Q(request__customer=user) |
-                Q(request__provider=user.providerprofile))
+                Q(request__provider=user.providerprofile)
+                ).select_related("request", "request__customer", "request__service"
+                ).prefetch_related("messages" )
         else:
-            conversations = Conversation.objects.filter(request__customer=user )
+            conversations = Conversation.objects.filter(request__customer=user 
+                                                        ).select_related("request", "request__service"
+                                                        ).prefetch_related("messages")
             
-        serializer = ConversationSerializer(conversations.order_by("-created_at"), many=True )
+        serializer = ConversationSerializer(conversations.order_by("-updated_at"), many=True, context={"request": request} )
 
         return Response(serializer.data)
     
@@ -43,8 +49,10 @@ class ConversationDetailView(APIView):
 
         if not (is_customer or is_provider):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN )
+        
+        ChatReadService.mark_conversation_as_read(conversation, request.user)
 
-        serializer = ConversationSerializer(conversation)
+        serializer = ConversationSerializer(conversation, context={"request": request})
 
         return Response(serializer.data)
     
@@ -62,9 +70,16 @@ class MessageListCreateView(APIView):
         if not (is_customer or is_provider):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN )
 
-        serializer = MessageSerializer(conversation.messages.all(), many=True )
+        messages = conversation.messages.all()
 
-        return Response(serializer.data)
+        paginator = MessagePagination()
+        page = paginator.paginate_queryset(messages, request)
+
+        serializer = MessageSerializer(page, many=True)
+
+        return paginator.get_paginated_response(
+            serializer.data
+        )
 
     def post(self, request, conversation_id):
         conversation = get_object_or_404(Conversation, pk=conversation_id )
@@ -77,7 +92,7 @@ class MessageListCreateView(APIView):
         if not (is_customer or is_provider):
             return Response( {"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN )
 
-        serializer = MessageSerializer(
+        serializer = MessageCreateSerializer(
             data=request.data,
             context={
                 "request": request,
@@ -93,3 +108,23 @@ class MessageListCreateView(APIView):
             return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+    
+class UnreadMessageCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if hasattr(user, "providerprofile"):
+            conversations = Conversation.objects.filter(
+                Q(request__customer=user) |
+                Q(request__provider=user.providerprofile))
+        else:
+            conversations = Conversation.objects.filter(
+                request__customer=user)
+
+        unread_count = Message.objects.filter(
+            conversation__in=conversations,
+            is_read=False ).exclude(sender=user).count()
+
+        return Response({"unread_count": unread_count})

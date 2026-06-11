@@ -8,16 +8,35 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = [ "id", "conversation", "sender", "sender_email", "content", "is_read", "created_at", ]
+        fields = [ "id", "conversation", "sender", "sender_email", "content", "is_read", 'read_at', "created_at", ]
         read_only_fields = [ "id", "conversation", "sender", "is_read", "created_at", ]
         
-class ConversationSerializer(serializers.ModelSerializer):
-    messages = MessageSerializer(many=True, read_only=True )
+class ConversationSerializer(serializers.ModelSerializer): 
+    last_message = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
-        fields = ["id", "request", "messages", "created_at", ] 
+        fields = ["id", "request","last_message",
+            "unread_count", "created_at", ] 
         read_only_fields = fields
+        
+    def get_last_message(self, obj):
+        last_msg = obj.messages.last()
+        if last_msg:
+            return {
+                "content": last_msg.content,
+                "sender": last_msg.sender.email,
+                "created_at": last_msg.created_at
+            }
+        return None
+    
+    def get_unread_count(self, obj):
+        user = self.context["request"].user
+
+        return obj.messages.filter(
+            is_read=False
+        ).exclude(sender=user).count()
         
 class MessageCreateSerializer(serializers.Serializer):
     content = serializers.CharField()

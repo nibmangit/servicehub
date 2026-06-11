@@ -1,9 +1,9 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.views import APIView 
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, DestroyAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, DestroyAPIView, ListCreateAPIView
 from .permissions import IsServiceProviderOwner, IsImageOwner
 from django.shortcuts import get_object_or_404
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -13,8 +13,10 @@ from .models import Service, ServiceImage
 from .serializers import *
 from .filters import ServiceFilter
 
-class ServiceListCreateView(APIView):
+class ServiceListCreateView(ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = Service.objects.filter(is_active=True)
+    serializer_class = ServiceSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
      
     filterset_class = ServiceFilter 
@@ -22,24 +24,19 @@ class ServiceListCreateView(APIView):
     ordering_fields = ['price', 'average_rating', 'created_at'] 
     ordering = ['-created_at']
 
-    def get(self, request): 
-        services = Service.objects.filter(is_active=True)
-        serializer = ServiceSerializer(services, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request): 
+    def create(self, request, *args, **kwargs):
         if not request.user.is_provider:
             return Response(
-                {"detail": "Permission Denied: Only verified providers can create service listings."},
-                status=status.HTTP_403_FORBIDDEN
+                {
+                    "detail": (
+                        "Permission Denied: "
+                        "Only verified providers can create service listings."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
             )
-            
-        serializer = ServiceSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().create(request, *args, **kwargs)
     
     
 class ServiceDetailView(RetrieveUpdateDestroyAPIView):
@@ -63,10 +60,7 @@ class ServiceImageUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        image = ServiceImage.objects.create(
-            service=service,
-            image=image_file
-        )
+        image = ServiceImage.objects.create(service=service, image=image_file )
 
         serializer = ServiceImageSerializer(image)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
