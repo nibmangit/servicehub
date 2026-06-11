@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/requests/', include('requests.urls')),
     path('api/reviews/', include('reviews.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/chats/', include('chats.urls')),
 ]
