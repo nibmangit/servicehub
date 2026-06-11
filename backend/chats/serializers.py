@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Conversation, Message
+from .services import ChatService
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -9,13 +10,6 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = [ "id", "conversation", "sender", "sender_email", "content", "is_read", "created_at", ]
         read_only_fields = [ "id", "conversation", "sender", "is_read", "created_at", ]
-        
-    def create(self, validated_data):
-        return Message.objects.create(
-            conversation=self.context["conversation"],
-            sender=self.context["request"].user,
-            **validated_data
-        )
         
 class ConversationSerializer(serializers.ModelSerializer):
     messages = MessageSerializer(many=True, read_only=True )

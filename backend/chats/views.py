@@ -34,11 +34,9 @@ class ConversationDetailView(APIView):
 
     def get(self, request, pk):
         conversation = get_object_or_404(Conversation, pk=pk)
-
         request_obj = conversation.request
-
         is_customer = request_obj.customer == request.user
-
+        
         is_provider = ( hasattr(request.user, "providerprofile")
             and request_obj.provider == request.user.providerprofile
         )
@@ -55,10 +53,9 @@ class MessageListCreateView(APIView):
 
     def get(self, request, conversation_id):
         conversation = get_object_or_404(Conversation, pk=conversation_id)
-
         request_obj = conversation.request
+        
         is_customer = request_obj.customer == request.user
-
         is_provider = (hasattr(request.user, "providerprofile")
             and request_obj.provider == request.user.providerprofile)
 
@@ -71,10 +68,9 @@ class MessageListCreateView(APIView):
 
     def post(self, request, conversation_id):
         conversation = get_object_or_404(Conversation, pk=conversation_id )
-
         request_obj = conversation.request
+        
         is_customer = request_obj.customer == request.user
-
         is_provider = (hasattr(request.user, "providerprofile")
             and request_obj.provider == request.user.providerprofile)
 
@@ -89,7 +85,11 @@ class MessageListCreateView(APIView):
             }  )
 
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            message = ChatService.send_message(
+                conversation=conversation,
+                sender=request.user,
+                content=serializer.validated_data["content"]
+            )
+            return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
