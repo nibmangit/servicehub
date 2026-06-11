@@ -13,6 +13,7 @@ class Notification(models.Model):
         ("REQUEST_STARTED", "Request Started"),
         ("REQUEST_COMPLETED", "Request Completed"),
         ("NEW_REVIEW", "New Review"),
+        ("NEW_MESSAGE", "New Message"),
     )
 
     user = models.ForeignKey(
