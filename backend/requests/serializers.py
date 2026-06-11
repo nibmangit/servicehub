@@ -5,6 +5,8 @@ from django.utils import timezone
 
 
 class ServiceRequestSerializer(serializers.ModelSerializer):
+    start_otp = serializers.SerializerMethodField()
+    complete_otp = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceRequest
@@ -52,6 +54,22 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
             agreed_price=service.price or 0,
             **validated_data
         )
+        
+    def get_start_otp(self, obj):
+        request = self.context.get("request")
+
+        if request and request.user == obj.customer:
+            return obj.start_otp
+
+        return None
+    
+    def get_complete_otp(self, obj):
+        request = self.context.get("request")
+
+        if request and request.user == obj.customer:
+            return obj.complete_otp
+
+        return None
 
 class RequestStatusUpdateSerializer(serializers.ModelSerializer):
 

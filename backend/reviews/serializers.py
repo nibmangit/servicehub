@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Review
-from requests.models import ServiceRequest
+from .services import ReviewService
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,3 +21,10 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Validation Error: You can only review a service after it is marked as COMPLETED. Current state: {request_obj.status}")
 
         return attrs
+    
+    def create(self, validated_data):
+        return ReviewService.create_review(
+            request_obj=validated_data["request"],
+            rating=validated_data["rating"],
+            comment=validated_data.get("comment"),
+        )

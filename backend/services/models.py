@@ -1,5 +1,5 @@
-from django.db import models
-from accounts.models import User
+from django.utils.text import slugify
+from django.db import models 
 from profiles.models import ProviderProfile
 from categories.models import Category
 from cloudinary.models import CloudinaryField
@@ -35,6 +35,19 @@ class Service(models.Model):
             models.Index(fields=["price"]),
             models.Index(fields=["created_at"]),
         ]
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+
+            while Service.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            self.slug = slug
+
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return self.title

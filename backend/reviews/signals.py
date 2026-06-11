@@ -11,7 +11,6 @@ def update_service_and_provider_metrics(service):
         return
  
     # Service Metrics 
-
     service_reviews = Review.objects.filter( request__service=service )
 
     service_metrics = service_reviews.aggregate(

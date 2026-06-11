@@ -1,8 +1,8 @@
 
 from django.utils import timezone
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 from .models import ServiceRequest
-from notifications.services import create_notification
+from notifications.services import NotificationService
 
 ALLOWED_TRANSITIONS = {
     "PENDING": ["ACCEPTED", "REJECTED"],
@@ -36,7 +36,7 @@ class ServiceRequestService:
 
             request_obj.status = "CANCELLED"
             request_obj.save()
-            create_notification(
+            NotificationService.notify(
                 user=request_obj.provider.user,
                 notification_type="REQUEST_CANCELLED",
                 title="Request Cancelled",
@@ -55,7 +55,7 @@ class ServiceRequestService:
 
                 request_obj.rejection_reason = rejection_reason
                 
-                create_notification(
+                NotificationService.notify(
                     user=request_obj.customer,
                     notification_type="REQUEST_REJECTED",
                     title="Request Rejected",
@@ -64,7 +64,7 @@ class ServiceRequestService:
                 )
             
             if new_status == "ACCEPTED":
-                create_notification(
+                NotificationService.notify(
                     user=request_obj.customer,
                     notification_type="REQUEST_ACCEPTED",
                     title="Request Accepted",
@@ -77,7 +77,7 @@ class ServiceRequestService:
                 if otp_code != request_obj.start_otp:
                     raise ValidationError("Invalid start OTP.")
                 
-                create_notification(
+                NotificationService.notify(
                     user=request_obj.customer,
                     notification_type="REQUEST_STARTED",
                     title="Service Started",
@@ -92,7 +92,7 @@ class ServiceRequestService:
 
                 request_obj.completed_at = timezone.now()
                 
-                create_notification(
+                NotificationService.notify(
                     user=request_obj.customer,
                     notification_type="REQUEST_COMPLETED",
                     title="Service Completed",
