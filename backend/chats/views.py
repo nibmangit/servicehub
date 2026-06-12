@@ -101,7 +101,7 @@ class MessageListCreateView(APIView):
 
         if serializer.is_valid():
             message = ChatService.send_message(
-                conversation=conversation,
+                conversation_id=conversation.id,
                 sender=request.user,
                 content=serializer.validated_data["content"]
             )

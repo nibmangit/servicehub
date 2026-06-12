@@ -30,7 +30,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         user = self.scope["user"]
 
-        if not content:
+        if not user or user.is_anonymous:
             return
 
         message_data = await self.save_message(self.conversation_id, user, content)
