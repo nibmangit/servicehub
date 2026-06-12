@@ -2,34 +2,38 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from .models import Message
 from notifications.services import NotificationService
+from .models import Conversation 
 
 class ChatService:
 
     @staticmethod
-    def send_message(conversation, sender, content):
+    def send_message(conversation_id, sender, content):
+        conversation = Conversation.objects.get(id=conversation_id)
         request_obj = conversation.request
 
-        # Permission Check
         is_customer = request_obj.customer == sender
-
-        is_provider = (hasattr(sender, "providerprofile")
-            and request_obj.provider == sender.providerprofile)
+        is_provider = (
+            hasattr(sender, "providerprofile")
+            and request_obj.provider == sender.providerprofile
+        )
 
         if not (is_customer or is_provider):
-            raise ValidationError("You are not allowed to send messages in this conversation.")
+            raise ValidationError("Not allowed")
 
-        # Create Message
         message = Message.objects.create(
             conversation=conversation,
             sender=sender,
             content=content
         )
+
         conversation.save(update_fields=["updated_at"])
 
-        # Determine Receiver
-        receiver = (request_obj.provider.user if is_customer else request_obj.customer )
+        receiver = (
+            request_obj.provider.user
+            if is_customer
+            else request_obj.customer
+        )
 
-        # Create Notification
         NotificationService.notify(
             user=receiver,
             notification_type="NEW_MESSAGE",

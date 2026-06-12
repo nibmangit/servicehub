@@ -16,3 +16,5 @@ build/
 
 # OS
 .DS_Store
+
+chats/test_ws.py
