@@ -52,6 +52,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     
+    #django channel for real time system
+    'channels',
+    
     # Local apps
     'accounts',
     'profiles',
@@ -118,6 +121,18 @@ SIMPLE_JWT = {
 }
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+#redis channel for real time
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 
 # Database
