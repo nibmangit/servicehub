@@ -4,12 +4,13 @@ from .services import ChatService
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    sender_id = serializers.IntegerField(source="sender.id", read_only=True)
     sender_email = serializers.EmailField(source="sender.email", read_only=True )
 
     class Meta:
         model = Message
-        fields = [ "id", "sender", "sender_email", "content", "is_read", 'read_at', "created_at", ]
-        read_only_fields = [ "id", "conversation", "sender", "is_read", "created_at", ]
+        fields = [ "id", "sender_id", "sender_email", "content", "is_read", 'read_at', "created_at", ]
+        read_only_fields = fields
         
 class ConversationSerializer(serializers.ModelSerializer): 
     last_message = serializers.SerializerMethodField()

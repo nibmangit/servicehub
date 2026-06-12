@@ -3,23 +3,44 @@ from rest_framework.exceptions import ValidationError
 from .models import Message
 from notifications.services import NotificationService
 from .models import Conversation 
+from django.shortcuts import get_object_or_404
+from .models import Conversation
 
+
+class ConversationAccessService:
+
+    @staticmethod
+    def user_has_access(conversation, user):
+        request_obj = conversation.request
+        is_customer = request_obj.customer == user
+
+        is_provider = (hasattr(user, "providerprofile")
+            and request_obj.provider == user.providerprofile)
+
+        return is_customer or is_provider
+
+    @staticmethod
+    def get_conversation_for_user(conversation_id, user):
+        conversation = get_object_or_404(
+            Conversation.objects.select_related(
+                "request",
+                "request__customer",
+                "request__provider",
+            ),
+            id=conversation_id)
+
+        if not ConversationAccessService.user_has_access(conversation, user ):
+            raise ValidationError("Not allowed")
+
+        return conversation
+    
 class ChatService:
 
     @staticmethod
     def send_message(conversation_id, sender, content):
-        conversation = Conversation.objects.get(id=conversation_id)
+        conversation = (ConversationAccessService.get_conversation_for_user(conversation_id, sender ) )
         request_obj = conversation.request
-
-        is_customer = request_obj.customer == sender
-        is_provider = (
-            hasattr(sender, "providerprofile")
-            and request_obj.provider == sender.providerprofile
-        )
-
-        if not (is_customer or is_provider):
-            raise ValidationError("Not allowed")
-
+ 
         message = Message.objects.create(
             conversation=conversation,
             sender=sender,
@@ -27,7 +48,8 @@ class ChatService:
         )
 
         conversation.save(update_fields=["updated_at"])
-
+        
+        is_customer = request_obj.customer == sender 
         receiver = (
             request_obj.provider.user
             if is_customer

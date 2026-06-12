@@ -5,11 +5,12 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 
 from .pagination import MessagePagination
 from .models import Conversation, Message
 from .serializers import *
-from .services import ChatReadService, ChatService
+from .services import ChatReadService, ChatService, ConversationAccessService
 
 
 class ConversationListView(APIView):
@@ -39,20 +40,14 @@ class ConversationDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
-        conversation = get_object_or_404(Conversation, pk=pk)
-        request_obj = conversation.request
-        is_customer = request_obj.customer == request.user
-        
-        is_provider = ( hasattr(request.user, "providerprofile")
-            and request_obj.provider == request.user.providerprofile
-        )
+        try:
+            conversation = (ConversationAccessService.get_conversation_for_user(pk, request.user))
+        except ValidationError:
+            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
-        if not (is_customer or is_provider):
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN )
-        
         ChatReadService.mark_conversation_as_read(conversation, request.user)
 
-        serializer = ConversationSerializer(conversation, context={"request": request})
+        serializer = ConversationSerializer(conversation, context={"request": request} )
 
         return Response(serializer.data)
     
@@ -60,15 +55,10 @@ class MessageListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, conversation_id):
-        conversation = get_object_or_404(Conversation, pk=conversation_id)
-        request_obj = conversation.request
-        
-        is_customer = request_obj.customer == request.user
-        is_provider = (hasattr(request.user, "providerprofile")
-            and request_obj.provider == request.user.providerprofile)
-
-        if not (is_customer or is_provider):
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN )
+        try:
+            conversation = (ConversationAccessService.get_conversation_for_user(conversation_id, request.user))
+        except ValidationError:
+            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
         messages = conversation.messages.all()
 
@@ -77,27 +67,21 @@ class MessageListCreateView(APIView):
 
         serializer = MessageSerializer(page, many=True)
 
-        return paginator.get_paginated_response(
-            serializer.data
-        )
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request, conversation_id):
-        conversation = get_object_or_404(Conversation, pk=conversation_id )
-        request_obj = conversation.request
-        
-        is_customer = request_obj.customer == request.user
-        is_provider = (hasattr(request.user, "providerprofile")
-            and request_obj.provider == request.user.providerprofile)
-
-        if not (is_customer or is_provider):
-            return Response( {"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN )
+        try:
+            conversation = (ConversationAccessService.get_conversation_for_user(conversation_id, request.user))
+        except ValidationError:
+            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = MessageCreateSerializer(
             data=request.data,
             context={
                 "request": request,
-                "conversation": conversation
-            }  )
+                "conversation": conversation,
+            }
+        )
 
         if serializer.is_valid():
             message = ChatService.send_message(
@@ -107,7 +91,7 @@ class MessageListCreateView(APIView):
             )
             return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class UnreadMessageCountView(APIView):
     permission_classes = [IsAuthenticated]
