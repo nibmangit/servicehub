@@ -49,8 +49,6 @@ return (
 
 <aside
 className="
-hidden
-md:flex
 w-64
 bg-white
 border-r
@@ -58,6 +56,7 @@ border-slate-200
 min-h-screen
 p-5
 flex-col
+flex
 "
 >
 
