@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { removeTokens } from "../utils/token";
 
 const AuthContext = createContext();
 
@@ -12,9 +13,9 @@ export function AuthProvider({ children }) {
     };
 
     const logout = () => {
-        localStorage.removeItem("refresh");
-        setUser(null);
-    };
+    removeTokens();
+    setUser(null);
+};
 
     useEffect(() => {
         setLoading(false);
