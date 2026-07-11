@@ -12,6 +12,8 @@ import RegisterPage from "../../pages/RegisterPage";
 import DashboardPage from "../../pages/DashboardPage";
 import ServicesPage from "../../pages/ServicesPage";
 import NotFoundPage from "../../pages/NotFoundPage";
+import ServiceDetailPage from "../../pages/ServiceDetailPage";
+import RequestDetailPage from "../../pages/RequestDetailPage";
 
 export const router = createBrowserRouter([
     {
@@ -25,6 +27,14 @@ export const router = createBrowserRouter([
             {
             path: "services",
             element: <ServicesPage />,
+            },
+            {
+            path: "services/:id",
+            element: <ServiceDetailPage />,
+            },
+            {
+            path: "requests/new",
+            element: <RequestDetailPage />,
             },
         ],
     },
