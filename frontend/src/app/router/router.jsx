@@ -4,6 +4,8 @@ import MainLayout from "../../layouts/MainLayout";
 import AuthLayout from "../../layouts/AuthLayout";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
+import ProtectedRoute from "../../components/shared/ProtectedRoute";
+
 import HomePage from "../../pages/HomePage";
 import LoginPage from "../../pages/LoginPage";
 import RegisterPage from "../../pages/RegisterPage";
@@ -37,7 +39,11 @@ export const router = createBrowserRouter([
     },
     {
         path: "/dashboard",
-        element: <DashboardLayout />,
+        element: (
+            <ProtectedRoute>
+                <DashboardLayout />
+            </ProtectedRoute>
+        ),
         children: [
             {
                 index: true,
