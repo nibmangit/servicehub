@@ -31,18 +31,24 @@ export default function Select({
                     className
                 )}
             >
-                <option value="">
-                    {placeholder}
-                </option>
+                {props.children ? (
+                    props.children
+                ) : (
+                    <>
+                        <option value="">
+                            {placeholder}
+                        </option>
 
-                {options.map((option) => (
-                    <option
-                        key={option.value}
-                        value={option.value}
-                    >
-                        {option.label}
-                    </option>
-                ))}
+                        {options.map((option) => (
+                            <option
+                                key={option.value}
+                                value={option.value}
+                            >
+                                {option.label}
+                            </option>
+                        ))}
+                    </>
+                )}
             </select>
 
             {error ? (
