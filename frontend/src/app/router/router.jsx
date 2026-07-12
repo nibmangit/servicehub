@@ -18,6 +18,7 @@ import RequestsPage from "../../pages/RequestsPage";
 import IncomingRequestsPage from "../../pages/IncomingRequestsPage";
 import ChatPage from "../../pages/ChatPage";
 import NotificationsPage from "../../pages/NotificationsPage";
+import ProfilePage from "../../pages/ProfilePage";
 
 export const router = createBrowserRouter([
     {
@@ -55,6 +56,10 @@ export const router = createBrowserRouter([
             {
                 path: "notifications", 
                 element: <NotificationsPage />
+            },
+            {
+                path: "providers/:id",
+                element: <ProfilePage />
             }
         ],
     },
