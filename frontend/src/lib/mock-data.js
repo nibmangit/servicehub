@@ -13,15 +13,9 @@ import {
   Truck,
 } from "lucide-react";
 
-/**
- * Field names on these types mirror the Django API responses so wire-up
- * later is mechanical. Fields prefixed with `_` are client-side display
- * enrichment that the API does not return directly.
- */
-
 const now = new Date().toISOString();
 
-// ============ Categories — GET /api/categories/ ============
+// ============ Categories ============
 export const categories = [
   { id: 1,  name: "Home Repair",  slug: "home-repair", description: "Repairs, installations, and handyman work.", icon: "wrench", is_active: true, created_at: now, updated_at: now, _icon: Wrench, _count: 342, _tint: "bg-primary-soft text-primary" },
   { id: 2,  name: "Cleaning",     slug: "cleaning",    description: "Home and office cleaning.", icon: "sparkles", is_active: true, created_at: now, updated_at: now, _icon: Sparkles, _count: 218, _tint: "bg-accent-soft text-accent" },
@@ -37,7 +31,6 @@ export const categories = [
   { id: 12, name: "Interior",     slug: "interior",    description: "Interior design and staging.", icon: "home", is_active: true, created_at: now, updated_at: now, _icon: Home, _count: 49, _tint: "bg-accent-soft text-accent" },
 ];
 
-// ============ Services — GET /api/services/<id>/ ============
 const img = (seed, w = 800, h = 600) =>
   `https://images.unsplash.com/photo-${seed}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 
@@ -47,6 +40,7 @@ function makeImages(url) {
   return [{ id: Math.floor(Math.random() * 1e6), image: url, created_at: now }];
 }
 
+// ============ Services ============
 export const services = [
   {
     id: 1, provider: 1, category: 1,
@@ -170,7 +164,7 @@ export const services = [
   },
 ];
 
-// ============ Profile — GET /api/profiles/me/ ============
+// ============ Current Profile ============
 export const currentProfile = {
   id: 4, email: "developer@example.com",
   full_name: "Selam Bekele", phone: "+251 91 234 5678",
@@ -179,7 +173,7 @@ export const currentProfile = {
   created_at: now, updated_at: now,
 };
 
-// ============ Testimonials & marketing (unchanged) ============
+// ============ Testimonials ============
 export const testimonials = [
   { name: "Selam Bekele", role: "Homeowner", city: "Addis Ababa", avatar: avatar("selam-t"), rating: 5,
     quote: "Found a plumber within 20 minutes on a Sunday evening. Clear pricing, verified reviews — it just works." },
@@ -203,7 +197,7 @@ export const languages = [
   { code: "ti", label: "Tigrinya", native: "ትግርኛ" },
 ];
 
-// Format helpers — API returns price as a string; UI formats it in ETB.
+// Price formatting helper (ETB).
 export function priceNumber(price) {
   if (typeof price === "number") return price;
   const n = parseFloat(price);
