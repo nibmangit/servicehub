@@ -16,6 +16,7 @@ import ServiceDetailPage from "../../pages/ServiceDetailPage";
 import RequestDetailPage from "../../pages/RequestDetailPage";
 import RequestsPage from "../../pages/RequestsPage";
 import IncomingRequestsPage from "../../pages/IncomingRequestsPage";
+import ChatPage from "../../pages/ChatPage";
 
 export const router = createBrowserRouter([
     {
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
                 path: "provider/requests",
                 element: <IncomingRequestsPage />,
             },
+            {
+                path: "chat", 
+                element: <ChatPage />
+            }
         ],
     },
     {
