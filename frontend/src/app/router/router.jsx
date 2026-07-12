@@ -19,6 +19,7 @@ import IncomingRequestsPage from "../../pages/IncomingRequestsPage";
 import ChatPage from "../../pages/ChatPage";
 import NotificationsPage from "../../pages/NotificationsPage";
 import ProfilePage from "../../pages/ProfilePage";
+import ReviewsPage from "../../pages/ReviewsPage";
 
 export const router = createBrowserRouter([
     {
@@ -60,6 +61,10 @@ export const router = createBrowserRouter([
             {
                 path: "providers/:id",
                 element: <ProfilePage />
+            },
+            {
+                path: "reviews", 
+                element: <ReviewsPage />
             }
         ],
     },
