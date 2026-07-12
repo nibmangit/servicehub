@@ -17,6 +17,7 @@ import RequestDetailPage from "../../pages/RequestDetailPage";
 import RequestsPage from "../../pages/RequestsPage";
 import IncomingRequestsPage from "../../pages/IncomingRequestsPage";
 import ChatPage from "../../pages/ChatPage";
+import NotificationsPage from "../../pages/NotificationsPage";
 
 export const router = createBrowserRouter([
     {
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
             {
                 path: "chat", 
                 element: <ChatPage />
+            },
+            {
+                path: "notifications", 
+                element: <NotificationsPage />
             }
         ],
     },
