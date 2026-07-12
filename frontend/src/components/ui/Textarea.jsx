@@ -1,4 +1,3 @@
-// src/components/ui/Textarea.jsx
 import clsx from "clsx";
 
 export default function Textarea({

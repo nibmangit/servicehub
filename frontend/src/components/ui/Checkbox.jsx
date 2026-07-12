@@ -1,4 +1,3 @@
-// src/components/ui/Checkbox.jsx
 import clsx from "clsx";
 
 export default function Checkbox({

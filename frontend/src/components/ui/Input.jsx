@@ -1,4 +1,3 @@
-// src/components/ui/Input.jsx
 import clsx from "clsx";
 
 export default function Input({

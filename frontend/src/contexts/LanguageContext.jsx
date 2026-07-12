@@ -13,6 +13,13 @@ const translations = {
     dashboard: "Dashboard",
     messages: "Messages",
     notifications: "Notifications",
+    previous: "Previous", next: "Next", page_info: "Page {current} of {total}",
+    all: "All",
+pending: "Pending",
+accepted: "Accepted",
+in_progress: "In Progress",
+completed: "Completed",
+cancelled: "Cancelled",
   },
   am: {
     search_placeholder: "ታማኝ የአካባቢ ባለሙያዎችን ይፈልጉ...",
@@ -22,6 +29,8 @@ const translations = {
     dashboard: "ዳሽቦርድ",
     messages: "መልዕክቶች",
     notifications: "ማስታወቂያዎች",
+    previous: "ቀዳሚ", next: "ቀጣይ", page_info: "ገጽ {current} ከ {total}",
+    all: "ሁሉም", pending: "በጥበቃ ላይ", accepted: "ተቀባይነት ያገኘ", in_progress: "በሂደት ላይ", completed: "ተጠናቋል", cancelled: "የተሰረዘ",
   },
   om: {
     search_placeholder: "Ogeeyyii naannoo amanamoo barbaadi...",
@@ -31,6 +40,8 @@ const translations = {
     dashboard: "Daashboordii",
     messages: "Ergaawwan",
     notifications: "Beeksisoota",
+    previous: "Duraa", next: "Kan itti anu", page_info: "Fuula {current} keessaa {total}",
+    all: "Hunda", pending: "Eeggamaa jira", accepted: "Fudhatameera", in_progress: "Itti fufamaa jira", completed: "Xumurameera", cancelled: "Haqameera",
   },
   ti: {
     search_placeholder: "እሙናት ናይ ከባቢ ሰብ ሞያታት ድለዩ...",
@@ -40,6 +51,8 @@ const translations = {
     dashboard: "ዳሽቦርድ",
     messages: "መልእኽትታት",
     notifications: "መተሓሳሰቢታት",
+    previous: "ቀዳማይ", next: "ቀጻሊ", page_info: "ገጽ {current} ካብ {total}",
+    all: "ኩሉ", pending: "ብምጽባቕ", accepted: "ተቐባልነት ዝረኸበ", in_progress: "ኣብ መስርሕ", completed: "ተወዲኡ", cancelled: "ዝተረፈ"
   }
 };
 
