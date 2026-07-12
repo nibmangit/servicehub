@@ -1,23 +1,27 @@
 export const requests = [
 
 {
-    id:1,
+    id: 1,
 
-    service:"House Cleaning",
+    service: "House Cleaning",
 
-    provider:"Abebe Cleaning",
+    provider: "Abebe Cleaning",
 
-    customer:"Nibretu",
+    customer: "Nibretu",
 
-    price:500,
+    price: 500,
 
-    status:"Pending",
+    status: "Pending",
 
-    date:"2026-07-12",
+    date: "2026-07-12",
 
-    address:"Bahir Dar",
+    address: "Bahir Dar",
 
-    description:"Clean my apartment."
+    description: "Clean my apartment.",
+
+    startOtp: "3842",
+
+    finishOtp: "7165",
 },
 
 {

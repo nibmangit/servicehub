@@ -15,6 +15,7 @@ import NotFoundPage from "../../pages/NotFoundPage";
 import ServiceDetailPage from "../../pages/ServiceDetailPage";
 import RequestDetailPage from "../../pages/RequestDetailPage";
 import RequestsPage from "../../pages/RequestsPage";
+import IncomingRequestsPage from "../../pages/IncomingRequestsPage";
 
 export const router = createBrowserRouter([
     {
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
             {
                 path: "requests/:id",
                 element: <RequestDetailPage />,
+            },
+            {
+                path: "provider/requests",
+                element: <IncomingRequestsPage />,
             },
         ],
     },

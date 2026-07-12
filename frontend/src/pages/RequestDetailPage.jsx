@@ -3,6 +3,7 @@ import Button from "../components/ui/Button";
 import RequestTimeline from "../components/shared/RequestTimeline";
 
 import { requests } from "../mocks/requests";
+import ProviderActions from "../components/requests/ProviderAction";
 
 export default function RequestDetailPage() {
 
@@ -154,7 +155,13 @@ export default function RequestDetailPage() {
 
             </Card>
 
-        </div>
+            <h2 className="text-xl font-semibold mb-6">
+                Provider Actions
+            </h2>
+
+            <ProviderActions />
+
+            </div>
 
     );
 
