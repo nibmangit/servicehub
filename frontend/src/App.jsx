@@ -21,7 +21,7 @@ export default function App() {
             {/* The ONLY route in the entire application right now */}
             <Route path="/" element={<Home />} />
             <Route path="dashboard/" element={<Dashboard />} />
-            <Route path="dashboard/" element={<Browse />} />
+            <Route path="browse/" element={<Browse />} />
           </Routes>
         </main>
 
