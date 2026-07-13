@@ -13,6 +13,7 @@ import { ServiceDetail } from "./pages/ServiceDetail";
 import NewService from "./pages/NewService";
 import Profile from "./pages/Profile";
 import BecomeProvider from "./pages/BecomeProvider";
+import MyServices from "./pages/MyServices";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="services/new/" element={<NewService />} />
             <Route path="profile/:id/" element={<Profile />} />
             <Route path="become-provider/" element={<BecomeProvider />} />
+            <Route path="my-services/" element={<MyServices />} />
           </Routes>
         </main>
 
