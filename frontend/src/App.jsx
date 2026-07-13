@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import BecomeProvider from "./pages/BecomeProvider";
 import MyServices from "./pages/MyServices";
 import Requests from "./pages/Requests";
+import ReviewsPage from "./pages/Reviews";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="services" element={<MyServices />} />
             <Route path="services/new" element={<NewService />} />
             <Route path="requests" element={<Requests />} />
+            <Route path="reviews" element={<ReviewsPage />} />
           </Route>
 
         </Route>
