@@ -22,6 +22,7 @@ export default function Login() {
           </Link>
         </>
       }
+      layout="left"
     >
       <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <div className="space-y-1.5">
@@ -59,10 +60,13 @@ export default function Login() {
   );
 }
 
-export function AuthShell({ title, subtitle, children, footer }) {
+export function AuthShell({ title, subtitle, children, footer, layout = "left" }) {
+
+    const isRight = layout === "right";
+
   return (
-    <div className="grid min-h-[calc(100vh-4rem)] lg:grid-cols-2">
-      <div className="flex items-center justify-center px-4 py-12 sm:px-8">
+    <div className={`grid min-h-[calc(100vh-4rem)] lg:grid-cols-2 ${isRight ? "lg:grid-flow-col-dense" : ""}`}>
+      <div className="flex items-center justify-center px-4 py-8 sm:px-8">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
@@ -75,7 +79,7 @@ export function AuthShell({ title, subtitle, children, footer }) {
         </div>
       </div>
 
-      <aside className="relative hidden overflow-hidden bg-primary lg:block">
+      <aside className={`relative hidden overflow-hidden bg-primary lg:block ${isRight ? "lg:order-first" : ""}`}>
         <div
           aria-hidden
           className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,theme(colors.accent/40),transparent_50%)]"
