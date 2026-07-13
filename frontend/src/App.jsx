@@ -14,6 +14,7 @@ import NewService from "./pages/NewService";
 import Profile from "./pages/Profile";
 import BecomeProvider from "./pages/BecomeProvider";
 import MyServices from "./pages/MyServices";
+import Requests from "./pages/Requests";
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="services" element={<MyServices />} />
             <Route path="services/new" element={<NewService />} />
+            <Route path="requests" element={<Requests />} />
           </Route>
 
         </Route>
