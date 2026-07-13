@@ -11,6 +11,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Browse } from "./pages/Browse";
 import { ServiceDetail } from "./pages/ServiceDetail";
 import NewService from "./pages/NewService";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -24,8 +25,9 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="dashboard/" element={<Dashboard />} />
             <Route path="browse/" element={<Browse />} />
-            <Route path="browse/:id/" element={<ServiceDetail />} />
-            <Route path="browse/new/" element={<NewService />} />
+            <Route path="services/:id/" element={<ServiceDetail />} />
+            <Route path="services/new/" element={<NewService />} />
+            <Route path="profile/:id/" element={<Profile />} />
           </Routes>
         </main>
 
