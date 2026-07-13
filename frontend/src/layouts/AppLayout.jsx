@@ -1,14 +1,19 @@
 import { Outlet } from "react-router-dom";
-import { AppSidebar } from "../components/app-sidebar";
+import { SiteHeader } from "../components/SiteHeader";
+import { SiteFooter } from "../components/SiteFooter";
+import Toaster from "../components/ui/Toaster";
 
 export default function AppLayout() {
   return (
-    <div className="mx-auto flex max-w-[1400px]">
-      <AppSidebar />
-      <div className="min-w-0 flex-1">
-        {/* React Router DOM renders child components right here */}
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
+
+      <main className="flex-1">
         <Outlet />
-      </div>
+      </main>
+
+      <SiteFooter />
+      <Toaster />
     </div>
   );
 }

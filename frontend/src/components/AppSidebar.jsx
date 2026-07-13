@@ -13,8 +13,8 @@ import {
   Wrench,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useI18n } from "@/lib/i18n";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/Avatar";
+import { useI18n } from "../lib/i18n";
 
 function NavItem({ item, active }) {
   return (

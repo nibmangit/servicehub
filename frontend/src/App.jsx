@@ -1,9 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Toaster from "./components/ui/Toaster";
 
 // Layout Components
-import { SiteHeader } from "./components/SiteHeader";
-import { SiteFooter } from "./components/SiteFooter";
+import AppLayout from "./layouts/AppLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 // Main Page View
 import Home from "./pages/Home";
@@ -18,26 +18,27 @@ import MyServices from "./pages/MyServices";
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen flex-col">
-        <SiteHeader />
-        
-        <main className="flex-1">
-          <Routes>
-            {/* The ONLY route in the entire application right now */}
-            <Route path="/" element={<Home />} />
-            <Route path="dashboard/" element={<Dashboard />} />
-            <Route path="browse/" element={<Browse />} />
-            <Route path="services/:id/" element={<ServiceDetail />} />
-            <Route path="services/new/" element={<NewService />} />
-            <Route path="profile/:id/" element={<Profile />} />
-            <Route path="become-provider/" element={<BecomeProvider />} />
-            <Route path="my-services/" element={<MyServices />} />
-          </Routes>
-        </main>
+      <Routes>
 
-        <SiteFooter />
-        <Toaster />
-      </div>
+        {/* Parent Layout */}
+        <Route element={<AppLayout />}>
+
+          {/* Public Pages */}
+          <Route index element={<Home />} />
+          <Route path="browse" element={<Browse />} />
+          <Route path="services/:id" element={<ServiceDetail />} />
+          <Route path="become-provider" element={<BecomeProvider />} />
+
+          {/* Dashboard Layout */}
+          <Route element={<DashboardLayout />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="services" element={<MyServices />} />
+            <Route path="services/new" element={<NewService />} />
+          </Route>
+
+        </Route>
+
+      </Routes>
     </BrowserRouter>
   );
 }
