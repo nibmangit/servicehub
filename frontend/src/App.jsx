@@ -19,6 +19,7 @@ import ReviewsPage from "./pages/Reviews";
 import Notifications from "./pages/Notifications";
 import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
+import Login from "./pages/Login";
 
 export default function App() {
   return (
@@ -33,6 +34,8 @@ export default function App() {
           <Route path="browse" element={<Browse />} />
           <Route path="services/:id" element={<ServiceDetail />} />
           <Route path="become-provider" element={<BecomeProvider />} />
+
+          <Route path="login" element={<Login />} />
 
           {/* Dashboard Layout */}
           <Route element={<DashboardLayout />}>
