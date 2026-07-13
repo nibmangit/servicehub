@@ -15,7 +15,8 @@ import Profile from "./pages/Profile";
 import BecomeProvider from "./pages/BecomeProvider";
 import MyServices from "./pages/MyServices";
 import Requests from "./pages/Requests";
-import ReviewsPage from "./pages/Reviews";
+import ReviewsPage from "./pages/Reviews"; 
+import Notifications from "./pages/Notifications";
 
 export default function App() {
   return (
@@ -38,6 +39,9 @@ export default function App() {
             <Route path="services/new" element={<NewService />} />
             <Route path="requests" element={<Requests />} />
             <Route path="reviews" element={<ReviewsPage />} />
+            <Route path="notifications" element={<Notifications />} />
+
+            <Route path="profile" element={<Profile />} />
           </Route>
 
         </Route>
