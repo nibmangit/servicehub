@@ -13,7 +13,7 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
 import { Textarea } from "./ui/Textarea";
-import { toast } from "Sonner";
+import { toast } from "Toster";
 import { formatETB } from "../lib/mock-data";
 
 export function RequestServiceModal({
