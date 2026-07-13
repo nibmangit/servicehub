@@ -7,15 +7,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "./ui/DropdownMenu";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/theme-toggle";
+} from "./ui/Sheet";
+import { ThemeToggle } from "./ThemeToggle";
 import { LANGS, useI18n } from "../lib/i18n";
 
 function Logo() {

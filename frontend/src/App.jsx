@@ -7,6 +7,7 @@ import { SiteFooter } from "./components/SiteFooter";
 
 // Main Page View
 import Home from "./pages/Home";
+import { Dashboard } from "./pages/Dashboard";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Routes>
             {/* The ONLY route in the entire application right now */}
             <Route path="/" element={<Home />} />
+            <Route path="dashboard/" element={<Dashboard />} />
           </Routes>
         </main>
 
