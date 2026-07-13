@@ -9,6 +9,7 @@ import { SiteFooter } from "./components/SiteFooter";
 import Home from "./pages/Home";
 import { Dashboard } from "./pages/Dashboard";
 import { Browse } from "./pages/Browse";
+import { ServiceDetail } from "./pages/ServiceDetail";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="dashboard/" element={<Dashboard />} />
             <Route path="browse/" element={<Browse />} />
+            <Route path="browse/:id/" element={<ServiceDetail />} />
           </Routes>
         </main>
 

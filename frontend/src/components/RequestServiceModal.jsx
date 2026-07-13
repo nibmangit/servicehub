@@ -8,13 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { formatETB } from "@/lib/mock-data";
+} from "./ui/Dialog";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Label } from "./ui/Label";
+import { Textarea } from "./ui/Textarea";
+import { toast } from "Sonner";
+import { formatETB } from "../lib/mock-data";
 
 export function RequestServiceModal({
   service,
@@ -52,7 +52,8 @@ export function RequestServiceModal({
             setTimeout(() => {
               setSubmitting(false);
               onOpenChange(false);
-              toast.success("Request sent", {
+              toast.success("Request sent", 
+                {
                 description: `${service._providerName} will respond shortly.`,
               });
             }, 700);
