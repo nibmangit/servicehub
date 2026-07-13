@@ -20,8 +20,8 @@ import {
   requests,
   revenueData,
   statusStyles,
-} from ".../lib/mock-app-data";
-import { formatETB } from "@/lib/mock-data";
+} from "../lib/mock-app-data";
+import { formatETB } from "../lib/mock-data";
 
 export function Dashboard() {
   const c = customerDashboard;
