@@ -20,6 +20,7 @@ import Notifications from "./pages/Notifications";
 import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="become-provider" element={<BecomeProvider />} />
 
           <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
 
           {/* Dashboard Layout */}
           <Route element={<DashboardLayout />}>
