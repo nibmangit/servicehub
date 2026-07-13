@@ -1,5 +1,5 @@
- import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from "./components/ui/Toaster";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Toaster from "./components/ui/Toaster";
 
 // Layout Components
 import { SiteHeader } from "./components/SiteHeader";
@@ -28,7 +28,7 @@ export default function App() {
         </main>
 
         <SiteFooter />
-        {/* <Toaster /> */}
+        <Toaster />
       </div>
     </BrowserRouter>
   );
