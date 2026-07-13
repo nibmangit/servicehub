@@ -12,6 +12,7 @@ import { Browse } from "./pages/Browse";
 import { ServiceDetail } from "./pages/ServiceDetail";
 import NewService from "./pages/NewService";
 import Profile from "./pages/Profile";
+import BecomeProvider from "./pages/BecomeProvider";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="services/:id/" element={<ServiceDetail />} />
             <Route path="services/new/" element={<NewService />} />
             <Route path="profile/:id/" element={<Profile />} />
+            <Route path="become-provider/" element={<BecomeProvider />} />
           </Routes>
         </main>
 
