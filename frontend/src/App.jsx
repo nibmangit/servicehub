@@ -1,9 +1,9 @@
  import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
+// import { Toaster } from "@/components/ui/sonner";
 
 // Layout Components
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "./components/SiteHeader";
+import { SiteFooter } from "./components/SiteFooter";
 
 // Main Page View
 import Home from "./pages/Home";
@@ -22,7 +22,7 @@ export default function App() {
         </main>
 
         <SiteFooter />
-        <Toaster />
+        {/* <Toaster /> */}
       </div>
     </BrowserRouter>
   );

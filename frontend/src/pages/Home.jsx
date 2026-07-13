@@ -10,12 +10,12 @@ import {
   Star,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ServiceCard } from "@/components/service-card";
-import { categories, services, stats, testimonials } from "@/lib/mock-data";
-import { useI18n } from "@/lib/i18n";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/Avatar";
+import { ServiceCard } from "../components/ServiceCard";
+import { categories, services, stats, testimonials } from "../lib/mock-data";
+import { useI18n } from "../lib/i18n";
 
 export default function LandingPage() {
   const { t } = useI18n();

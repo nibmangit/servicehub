@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom"; 
 import { BadgeCheck, Clock, Heart, MapPin, Star } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { formatETB } from "@/lib/mock-data";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/Avatar";
+import { Button } from "./ui/Button";
+import { formatETB } from "../lib/mock-data";
 
 export function ServiceCard({ service }) {
   return (

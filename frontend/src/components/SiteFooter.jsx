@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"; 
 import { ShieldCheck } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "../lib/i18n";
 
 export function SiteFooter() {
   const { t } = useI18n();

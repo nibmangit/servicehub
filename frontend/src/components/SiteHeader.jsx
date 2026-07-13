@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"; 
 import { Bell, Globe, LayoutDashboard, Menu, Search, ShieldCheck } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/Button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LANGS, useI18n } from "@/lib/i18n";
+import { LANGS, useI18n } from "../lib/i18n";
 
 function Logo() {
   return (
