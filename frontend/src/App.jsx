@@ -18,6 +18,7 @@ import Requests from "./pages/Requests";
 import ReviewsPage from "./pages/Reviews"; 
 import Notifications from "./pages/Notifications";
 import Messages from "./pages/Messages";
+import Settings from "./pages/Settings";
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="messages" element={<Messages />} />
 
             <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
         </Route>
