@@ -19,3 +19,4 @@ build/
 
 chats/test_ws.py
 notifications/test_notifications_ws.py
+lab

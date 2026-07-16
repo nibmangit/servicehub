@@ -18,11 +18,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        # Pull out the confirmation password so it doesn't get written to the database
-        validated_data.pop('password_confirm')
-         
-        user = User.objects.create_user(
-            email=validated_data['email'], 
-            password=validated_data['password']
-        )
-        return user
+        validated_data.pop("password_confirm")
+
+        return User.objects.create_user(**validated_data)
