@@ -1,13 +1,14 @@
+from django.db import transaction
 from .models import ProviderProfile
 from accounts.models import User
 
-
+@transaction.atomic
 def become_provider(user: User, experience="", skills=""):
     if user.is_provider:
         return None
 
     user.is_provider = True
-    user.is_customer = False
+    # user.is_customer = False
     user.save()
 
     provider = ProviderProfile.objects.create(
