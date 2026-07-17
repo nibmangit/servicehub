@@ -1,14 +1,14 @@
 import { Menu } from "lucide-react";
 
-import { Button } from "./ui/Button";
+import { Button } from "../ui/Button";
 
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
-} from "./ui/Sheet";
+} from "../ui/Sheet";
 
-import SidebarContent from "./SidebarContent";
+import SidebarContent from "../SidebarContent";
 
 
 export default function DashboardHeader() {

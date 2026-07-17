@@ -8,13 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "./ui/Dialog";
-import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
-import { Label } from "./ui/Label";
-import { Textarea } from "./ui/Textarea";
+} from "../ui/Dialog";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import { Label } from "../ui/Label";
+import { Textarea } from "../ui/Textarea";
 import { toast } from "sonner";
-import { formatETB } from "../lib/mock-data";
+import { formatETB } from "../../lib/mock-data";
 
 export function RequestServiceModal({
   service,

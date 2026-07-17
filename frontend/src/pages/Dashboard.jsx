@@ -22,6 +22,9 @@ import {
   statusStyles,
 } from "../lib/mock-app-data";
 import { formatETB } from "../lib/mock-data";
+import { StatGrid } from "../components/dashboard/StatGrid";
+import { Panel } from "../components/dashboard/Panel";
+import { MiniChart } from "../components/dashboard/MiniChart";
 
 export function Dashboard() {
   const c = customerDashboard;
@@ -136,64 +139,6 @@ export function Dashboard() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-function Panel({ title, action, children }) {
-  return (
-    <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <header className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold">{title}</h2>
-        {action}
-      </header>
-      {children}
-    </section>
-  );
-}
-
-const toneMap = {
-  primary: "bg-primary-soft text-primary",
-  accent: "bg-accent-soft text-accent",
-  info: "bg-info/15 text-info",
-  warning: "bg-warning/15 text-warning-foreground",
-};
-
-function StatGrid({ stats }) {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {stats.map((s) => (
-        <div key={s.label} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-          <div className="flex items-center justify-between">
-            <span className={`grid h-10 w-10 place-items-center rounded-xl ${toneMap[s.tone]}`}>
-              <s.icon className="h-5 w-5" />
-            </span>
-            <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="mt-4 text-2xl font-bold tracking-tight">{s.value}</div>
-          <div className="mt-1 text-xs text-muted-foreground">{s.label}</div>
-          <div className="mt-3 text-[11px] font-medium text-accent">{s.delta}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function MiniChart({ data }) {
-  const max = Math.max(...data.map((d) => d.v));
-  return (
-    <div className="flex h-40 items-end gap-2">
-      {data.map((d) => (
-        <div key={d.m} className="group flex flex-1 flex-col items-center gap-2">
-          <div className="relative flex h-full w-full items-end">
-            <div
-              className="w-full rounded-md bg-primary/80 transition-all group-hover:bg-primary"
-              style={{ height: `${(d.v / max) * 100}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-muted-foreground">{d.m}</span>
-        </div>
-      ))}
     </div>
   );
 }

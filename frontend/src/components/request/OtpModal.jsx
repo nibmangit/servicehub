@@ -9,13 +9,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "./ui/Dialog";
-import { Button } from "./ui/Button";
+} from "../ui/Dialog";
+import { Button } from "../ui/Button";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "./ui/InputOtp";
+} from "../ui/InputOtp";
 
 export function OtpModal({
   action,

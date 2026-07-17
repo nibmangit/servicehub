@@ -6,9 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/Avatar";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Tabs, TabsList, TabsTrigger } from "../components/ui/Tabs";
-import { OtpModal } from "../components/OtpModal";
+import { OtpModal } from "../components/request/OtpModal";
 import { requests, statusStyles } from "../lib/mock-app-data";
 import { formatETB } from "../lib/mock-data";
+import { ProviderActions } from "../components/request/ProvidersAction";
 
 export default function Requests() {
   const [tab, setTab] = useState("all");
@@ -130,34 +131,4 @@ export default function Requests() {
       )}
     </div>
   );
-}
-
-function OtpBadge({ label, code, muted }) {
-  return (
-    <div className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs ${
-      muted ? "border-border bg-secondary/40 text-muted-foreground" : "border-primary/30 bg-primary-soft text-primary"
-    }`}>
-      <KeyRound className="h-3.5 w-3.5" />
-      <span className="font-medium">{label}</span>
-      <span className="font-mono text-sm tracking-[0.3em]">{code}</span>
-    </div>
-  );
-}
-
-function ProviderActions({ request, onOtp }) {
-  switch (request.status) {
-    case "PENDING":
-      return (
-        <>
-          <Button size="sm" variant="outline">Reject</Button>
-          <Button size="sm">Accept</Button>
-        </>
-      );
-    case "ACCEPTED":
-      return <Button size="sm" onClick={() => onOtp("start")}><KeyRound className="h-4 w-4" />Start job</Button>;
-    case "IN_PROGRESS":
-      return <Button size="sm" onClick={() => onOtp("complete")}><KeyRound className="h-4 w-4" />Mark complete</Button>;
-    default:
-      return null;
-  }
 }

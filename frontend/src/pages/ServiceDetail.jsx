@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/Avatar";
 import { Button } from "../components/ui/Button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
 import { ServiceCard } from "../components/ServiceCard";
-import { RequestServiceModal } from "../components/RequestServiceModal";
+import { RequestServiceModal } from "../components/request/RequestServiceModal";
 import { formatETB, services } from "../lib/mock-data";
 
 export function ServiceDetail() {
