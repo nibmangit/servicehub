@@ -77,7 +77,7 @@ export default function SidebarContent() {
   ];
 
   return (
-    <div className="sticky top-0 flex h-[calc(100vh-4rem)] flex-col p-4">
+    <div className="sticky top-0 flex h-[calc(100vh-4rem)] overflow-y-auto flex-col p-4">
 
       <Section label={t("side.menu")}>
         {primary.map((item) => (

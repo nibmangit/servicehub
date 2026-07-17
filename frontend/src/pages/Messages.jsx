@@ -15,7 +15,7 @@ export default function Messages() {
   const active = conversations.find((c) => c.id === activeId);
 
   return (
-    <div className="h-[calc(100vh-4rem)]">
+    // <div className="h-[calc(100vh-4rem)]">
       <div className="grid h-full grid-cols-1 md:grid-cols-[320px_1fr]">
         <aside className="hidden w-80 flex-col border-r border-border bg-card md:flex">
             <ChatSidebar
@@ -41,16 +41,7 @@ export default function Messages() {
             setDraft={setDraft}
           />
         </section>
-      </div>
-
-      {/* <div className="grid h-full place-items-center md:hidden">
-        <div className="text-center">
-          <MessageCircle className="mx-auto h-10 w-10 text-muted-foreground" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            Open on desktop for the full inbox.
-          </p>
-        </div>
-      </div> */}
-    </div>
+      </div> 
+    // </div>
   );
 }
