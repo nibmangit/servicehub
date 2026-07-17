@@ -20,12 +20,16 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = ['id', 'provider', 'category', 'title', 'description', 'price_type', 'price', 'duration', 'average_rating', 'review_count', 'is_active', 'images', 'created_at', 'updated_at' ] 
         read_only_fields = ['id', 'provider', 'average_rating', 'review_count', 'created_at', 'updated_at']
-
-    def create(self, validated_data):
-        # Automatically grab the logged-in user's provider profile context
-        user = self.context['request'].user
-        provider_profile = user.providerprofile # OneToOne reverse relationship
         
-        # Inject the provider instance into the database creation query
-        service = Service.objects.create(provider=provider_profile, **validated_data)
-        return service
+class ServiceImageUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceImage
+        fields = ["id", "image", "is_primary", "created_at"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if instance.image:
+            data["image"] = instance.image.url
+
+        return data
