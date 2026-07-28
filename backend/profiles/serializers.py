@@ -4,16 +4,15 @@ from .services import submit_provider_application
 from cloudinary.utils import cloudinary_url
 
 class ProviderApplicationSerializer(serializers.ModelSerializer):
-    skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skill.objects.filter(is_active=True),
-        many=True
-    )
+    skills = serializers.PrimaryKeyRelatedField(queryset=Skill.objects.filter(is_active=True), many=True )
 
     class Meta:
         model = ProviderApplication
-        fields = ["id", "skills", "experience_years", "professional_summary", "status", "submitted_at", ]
-        read_only_fields = ["id", "status", "submitted_at", ]
+        fields = ["id", "skills", "experience_years", "professional_summary",  
+                   "status", "submitted_at"]
         
+        read_only_fields = ["id", "status", "submitted_at",]
+
     def create(self, validated_data):
         skills = validated_data.pop('skills', [])
         user = self.context['request'].user
@@ -25,7 +24,14 @@ class ProviderApplicationSerializer(serializers.ModelSerializer):
         )
         
         if application is None:
-            raise serializers.ValidationError("You have already submitted a pending application or you are already a provider.")
+            raise serializers.ValidationError(
+                {
+                    "detail": (
+                        "You already have a pending provider application "
+                        "or you are already a provider."
+                    )
+                }
+            )
         
         return application
     

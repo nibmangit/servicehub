@@ -43,18 +43,23 @@ class Skill(models.Model):
     
     
 class ProviderApplication(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        APPROVED = 'approved', 'Approved'
+        REJECTED = 'rejected', 'Rejected' 
+        
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     
     skills = models.ManyToManyField('Skill', blank=True, related_name='providers')
     experience_years = models.PositiveSmallIntegerField(blank=True, null=True)
-    professional_summary = models.TextField(blank=True, null=True)
+    professional_summary = models.TextField(blank=True, null=True) 
     
-    status_choices = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-    ]
-    status = models.CharField(max_length=10, choices=status_choices, default='pending')
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     rejection_reason = models.TextField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reviewed_provider_applications" )
+    
     submitted_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.status}" 
