@@ -1,33 +1,33 @@
 from rest_framework import serializers
-from .models import ProviderProfile, UserProfile
-from .services import become_provider
+from .models import UserProfile, ProviderApplication, Skill
+from .services import submit_provider_application
 from cloudinary.utils import cloudinary_url
 
-class ProviderProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProviderProfile 
-        fields = ['id', 'experience', 'skills', 'is_available', 'rating', 'total_reviews', 'created_at' ] 
-        read_only_fields = ['id', 'rating', 'total_reviews', 'created_at']
+class ProviderApplicationSerializer(serializers.ModelSerializer):
+    skills = serializers.PrimaryKeyRelatedField(
+        queryset=Skill.objects.filter(is_active=True),
+        many=True
+    )
 
-    def create(self, validated_data): 
+    class Meta:
+        model = ProviderApplication
+        fields = ["id", "skills", "experience_years", "professional_summary", "status", "submitted_at", ]
+        read_only_fields = ["id", "status", "submitted_at", ]
+        
+    def create(self, validated_data):
+        skills = validated_data.pop('skills', [])
         user = self.context['request'].user
-         
-        experience = validated_data.get('experience', '')
-        skills = validated_data.get('skills', '')
-         
-        provider_profile = become_provider(
-            user=user, 
-            experience=experience, 
-            skills=skills
+        
+        application = submit_provider_application(
+            user=user,
+            skills=skills,
+            **validated_data
         )
         
-        # Guard against users who try to upgrade twice
-        if provider_profile is None:
-            raise serializers.ValidationError(
-                {"detail": "Operational Error: You are already registered as a provider."}
-            )
-            
-        return provider_profile
+        if application is None:
+            raise serializers.ValidationError("You have already submitted a pending application or you are already a provider.")
+        
+        return application
     
 class UserProfileSerializer(serializers.ModelSerializer): 
     email = serializers.EmailField(source='user.email', read_only=True)  

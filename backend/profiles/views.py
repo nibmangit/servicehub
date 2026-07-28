@@ -6,26 +6,25 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from .serializers import *
 
-class BecomeProviderView(APIView): 
+class ProviderApplicationView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request): 
-        serializer = ProviderProfileSerializer(
-            data=request.data, 
-            context={'request': request}
+    def post(self, request):
+        serializer = ProviderApplicationSerializer(
+            data=request.data,
+            context={"request": request}
         )
-        
+
         if serializer.is_valid():
             serializer.save()
+
             return Response(
                 {
-                    "detail": "Account upgraded to Service Provider successfully.", 
-                    "provider_profile": serializer.data
-                },
-                status=status.HTTP_201_CREATED
-            )
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    "detail": "Provider application submitted successfully.",
+                    "application": serializer.data
+                }, status=status.HTTP_201_CREATED )
+
+        return Response( serializer.errors, status=status.HTTP_400_BAD_REQUEST )
     
 class MyProfileView(RetrieveUpdateAPIView): 
     permission_classes = [IsAuthenticated]
