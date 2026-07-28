@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from .models import UserProfile, ProviderApplication, Skill
 from .services import submit_provider_application
@@ -17,11 +18,14 @@ class ProviderApplicationSerializer(serializers.ModelSerializer):
         skills = validated_data.pop('skills', [])
         user = self.context['request'].user
         
-        application = submit_provider_application(
-            user=user,
-            skills=skills,
-            **validated_data
-        )
+        try:
+            application = submit_provider_application(
+                user=user,
+                skills=skills,
+                **validated_data
+            )
+        except ValidationError as e:
+            raise serializers.ValidationError({"detail": e.messages})
         
         if application is None:
             raise serializers.ValidationError(

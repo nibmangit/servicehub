@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from .models import ProviderApplication, ProviderProfile
 from accounts.models import User 
+from identity.models import IdentityVerification
 
 @transaction.atomic
 def submit_provider_application(user: User, skills, experience_years, professional_summary):
@@ -17,6 +18,14 @@ def submit_provider_application(user: User, skills, experience_years, profession
     existing_application = ProviderApplication.objects.filter(user=user, status=ProviderApplication.Status.PENDING).first()
     if existing_application:
         return None
+    
+    # Check if the user has a verified identity verification
+    verification = IdentityVerification.objects.filter(
+        user=user,
+        status=IdentityVerification.Status.VERIFIED
+    ).first()
+    if not verification:
+        raise ValidationError("Identity verification is required before applying as a provider." )
     
     # Create a new provider application
     application = ProviderApplication.objects.create(
