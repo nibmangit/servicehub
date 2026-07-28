@@ -38,11 +38,8 @@ class NotificationUpdateView(UpdateAPIView):
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)
 
-    def patch(self, request, *args, **kwargs):
-        notification = self.get_object()
-        notification.is_read = True
-        notification.save()
-        return self.partial_update(request, *args, **kwargs)
+    def perform_update(self, serializer):
+        serializer.save(is_read=True)
 
 class MarkAllNotificationsAsReadView(APIView):
     permission_classes = [IsAuthenticated]

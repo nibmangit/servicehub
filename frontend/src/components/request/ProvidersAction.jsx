@@ -1,3 +1,4 @@
+import { KeyRound } from "lucide-react";
 import { Button } from "../ui/Button";
 
 export function ProviderActions({ request, onOtp }) {

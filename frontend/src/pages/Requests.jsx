@@ -10,6 +10,7 @@ import { OtpModal } from "../components/request/OtpModal";
 import { requests, statusStyles } from "../lib/mock-app-data";
 import { formatETB } from "../lib/mock-data";
 import { ProviderActions } from "../components/request/ProvidersAction";
+import { OtpBadge } from "../components/request/OtpBadge";
 
 export default function Requests() {
   const [tab, setTab] = useState("all");

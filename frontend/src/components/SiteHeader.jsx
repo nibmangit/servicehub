@@ -18,41 +18,7 @@ import {
 import { ThemeToggle } from "./ThemeToggle";
 import { LANGS, useI18n } from "../lib/i18n";
 
-function Logo() {
-  return (
-    <Link to="/" className="flex items-center gap-2 shrink-0">
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft">
-        <ShieldCheck className="h-5 w-5" strokeWidth={2.4} />
-      </span>
-      <span className="text-lg font-semibold tracking-tight">
-        Service<span className="text-primary">Hub</span>
-      </span>
-    </Link>
-  );
-}
 
-function LanguageMenu() {
-  const { lang, setLang } = useI18n();
-  const current = LANGS.find((l) => l.code === lang) ?? LANGS[0];
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1.5">
-          <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline">{current.native}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-44">
-        {LANGS.map((l) => (
-          <DropdownMenuItem key={l.code} onClick={() => setLang(l.code)}>
-            <span className="flex-1">{l.native}</span>
-            <span className="text-xs text-muted-foreground">{l.label}</span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 export function SiteHeader() {
   const { t } = useI18n();
@@ -88,14 +54,14 @@ export function SiteHeader() {
             <span>{t("nav.searchPlaceholder")}</span>
           </Link>
 
-          <Button asChild variant="ghost" size="icon" className="hidden sm:inline-flex" aria-label={t("nav.notifications")}>
+          <Button asChild variant="ghost" size="icon" className="sm:inline-flex" aria-label={t("nav.notifications")}>
             <Link to="/notifications"><Bell className="h-5 w-5" /></Link>
           </Button>
 
           <ThemeToggle />
           <LanguageMenu />
 
-          <Button asChild variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label={t("nav.dashboard")}>
+          <Button asChild variant="ghost" size="icon" className="lg:inline-flex" aria-label={t("nav.dashboard")}>
             <Link to="/dashboard"><LayoutDashboard className="h-5 w-5" /></Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
@@ -138,5 +104,42 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
+  );
+}
+
+
+function Logo() {
+  return (
+    <Link to="/" className="flex items-center gap-2 shrink-0">
+      <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft">
+        <ShieldCheck className="h-5 w-5" strokeWidth={2.4} />
+      </span>
+      <span className="text-lg font-semibold tracking-tight">
+        Service<span className="text-primary">Hub</span>
+      </span>
+    </Link>
+  );
+}
+
+function LanguageMenu() {
+  const { lang, setLang } = useI18n();
+  const current = LANGS.find((l) => l.code === lang) ?? LANGS[0];
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="gap-1.5">
+          <Globe className="h-4 w-4" />
+          <span className="hidden sm:inline">{current.native}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-44">
+        {LANGS.map((l) => (
+          <DropdownMenuItem key={l.code} onClick={() => setLang(l.code)}>
+            <span className="flex-1">{l.native}</span>
+            <span className="text-xs text-muted-foreground">{l.label}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

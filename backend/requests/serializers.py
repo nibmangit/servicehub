@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import ServiceRequest
-from .services import ServiceRequestService
+from .services import ServiceRequestService 
 from django.utils import timezone
 
 
@@ -81,7 +81,6 @@ class RequestStatusUpdateSerializer(serializers.ModelSerializer):
         fields = ['status', 'otp_code', 'rejection_reason']
 
     def update(self, instance, validated_data):
-        from .services import ServiceRequestService
 
         return ServiceRequestService.change_status(
             request_obj=instance,

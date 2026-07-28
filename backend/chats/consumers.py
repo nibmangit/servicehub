@@ -34,22 +34,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.mark_messages_as_read()
         await self.broadcast_read_state()
         
-        # await self.channel_layer.group_send(
-        #     self.room_group_name, {
-        #         "type": "presence_event",
-        #         "user_id": user.id,
-        #         "is_online": True
-        #     }
-        # )
-        
-        # await self.mark_messages_as_read()
-        # await self.channel_layer.group_send(
-        #     self.room_group_name,
-        #     {
-        #         "type": "messages_read",
-        #         "conversation_id": self.conversation_id,
-        #     }
-        # )
 
     async def disconnect(self, close_code):
         user = self.scope["user"]
@@ -57,15 +41,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if user and not user.is_anonymous:
             await self.set_user_offline(user.id)
             await self.broadcast_presence(user.id, False)
-        
-        # await self.channel_layer.group_send(
-        #     self.room_group_name, {
-        #         "type": "presence_event",
-        #         "user_id": user.id,
-        #         "is_online": False
-        #     }
-        # )
-        
+   
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name

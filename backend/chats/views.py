@@ -1,8 +1,8 @@
 from django.db.models import Q
 
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from rest_framework.generics import ListAPIView
+from rest_framework.response import Response 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
@@ -13,28 +13,26 @@ from .serializers import *
 from .services import ChatReadService, ChatService, ConversationAccessService
 
 
-class ConversationListView(APIView):
+class ConversationListView(ListAPIView):
+    serializers_class = ConversationSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user = request.user
-
+    def get_queryset(self):
+        user = self.request.user
+        
         if hasattr(user, "providerprofile"):
-            conversations = Conversation.objects.filter(
+            return(
+                Conversation.objects.filter(
                 Q(request__customer=user) |
                 Q(request__provider=user.providerprofile)
                 ).select_related("request", "request__customer", "request__service"
                 ).prefetch_related("messages__sender")
-        else:
-            conversations = Conversation.objects.filter(request__customer=user 
+            )
+        return(
+            Conversation.objects.filter(request__customer=user 
                                                         ).select_related("request", "request__service"
                                                         ).prefetch_related("messages__sender")
-            
-        serializer = ConversationSerializer(conversations.order_by("-updated_at"), many=True, context={"request": request} )
-
-        return Response(serializer.data)
-    
-
+        )
 
 class ConversationDetailView(APIView):
     permission_classes = [IsAuthenticated]
