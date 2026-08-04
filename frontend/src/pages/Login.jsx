@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 
 import { Button } from "../components/ui/Button";
@@ -6,9 +6,47 @@ import { Input } from "../components/ui/Input";
 import { Label } from "../components/ui/Label";
 import { Checkbox } from "../components/ui/Checkbox";
 import { useI18n } from "../lib/i18n";
+import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
 
 export default function Login() {
   const { t } = useI18n();
+  const { user, loading, login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const successMessage = location.state?.message || null;
+  const [formData, setFormData] = useState({
+    email: "", password: ""
+  });
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData, [e.target.name]: e.target.value
+    });
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+    try {
+      await login(formData);
+      navigate("/dashboard");
+    } catch (err) {
+      const errData = err.response?.data;
+      if (errData) {
+        const serverError = errData.detail || errData.non_field_errors?.[0] || "Invalid email or password.";
+        setError(serverError);
+      } else {
+        setError("Failed to connect to the server. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <AuthShell
@@ -24,11 +62,26 @@ export default function Login() {
       }
       layout="left"
     >
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-4" onSubmit={handleSubmit}>
+
+        {successMessage && (
+          <div className="p-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md">
+            {successMessage}
+          </div>
+        )}
+
+        {/* Error Message Alert */}
+        {error && (
+          <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-1.5">
-          <Label htmlFor="email">{t("auth.email")}</Label>
-          <Input id="email" type="email" placeholder="you@example.com" autoComplete="email" />
+          <Label htmlFor="email">{t("auth.email")|| "Email" }</Label>
+          <Input id="email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" autoComplete="email" />
         </div>
+
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">{t("auth.password")}</Label>
@@ -36,12 +89,17 @@ export default function Login() {
               {t("auth.forgot")}
             </Link>
           </div>
-          <Input id="password" type="password" placeholder="••••••••" autoComplete="current-password" />
+          <Input id="password" type="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" autoComplete="current-password" />
         </div>
+
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
           <Checkbox id="remember" /> {t("auth.remember")}
         </label>
-        <Button type="submit" className="w-full" size="lg">{t("auth.login")}</Button>
+
+        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+          {isLoading ? "Logging in..." : t("auth.login") || "Login"}
+        </Button>
+
         <div className="relative py-2 text-center text-xs uppercase tracking-wide text-muted-foreground">
           <span className="relative z-10 bg-card px-3">{t("auth.or")}</span>
           <span aria-hidden className="absolute inset-x-0 top-1/2 h-px bg-border" />
@@ -53,7 +111,7 @@ export default function Login() {
             <path fill="#FBBC05" d="M5.7 14.1a6.6 6.6 0 0 1 0-4.2V7H2a11 11 0 0 0 0 10l3.7-2.9Z"/>
             <path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.1 1.6L19.2 4A11 11 0 0 0 2 7l3.7 2.9C6.6 7.3 9.1 5.4 12 5.4Z"/>
           </svg>
-          {t("auth.google")}
+          {t("auth.google") || "Continue with Google"}
         </Button>
       </form>
     </AuthShell>
