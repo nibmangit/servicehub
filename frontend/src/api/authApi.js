@@ -9,10 +9,5 @@ export const authApi = {
         const response = await client.post('auth/register/', userData);
         return response.data;
     },
-
-    getProfile: async () => {
-        const response = await client.get('auth/me/');
-        return response.data;
-    },
      
 };

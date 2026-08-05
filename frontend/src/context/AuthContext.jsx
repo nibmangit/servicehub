@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { authApi } from "../api/authApi";
+import { profileApi } from "../api/profileApi";
 
 const AuthContext = createContext();
 
@@ -18,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
         try {
-            const data = await authApi.getProfile();
+            const data = await profileApi.getProfile();
             setUser(data);
         } catch (error) {
             console.error('Failed to fetch user profile:', error);
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }) => {
 
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, setUser,  loading, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );
