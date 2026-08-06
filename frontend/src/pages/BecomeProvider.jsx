@@ -1,32 +1,110 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, BadgeCheck, CheckCircle2, TrendingUp, Users } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, BadgeCheck, CheckCircle2, TrendingUp, Users, Plus, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Label } from "../components/ui/Label";
 import { Textarea } from "../components/ui/Textarea";
+import { profileApi } from "../api/profileApi";
+import SkillSelectModal from "../components/profile/SkillSelectModal";
 
 export default function BecomeProvider() {
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+   
+  const [isSkillModalOpen, setIsSkillModalOpen] = useState(false); 
+  const [allSkillsMap, setAllSkillsMap] = useState({});
+ 
+  const [formData, setFormData] = useState({
+    skills: [], 
+    experience_years: "",
+    professional_summary: "",
+  });
+
+  // Pre-fetch skill records mapping so we can display selected skill names as tags
+  useEffect(() => {
+    const loadSkillNames = async () => {
+      try {
+        const data = await profileApi.getSkills();
+        const map = {};
+        data.forEach((s) => {
+          map[s.id] = s.name;
+        });
+        setAllSkillsMap(map);
+      } catch (err) {
+        console.error("Failed to load skills map:", err);
+      }
+    };
+    loadSkillNames();
+  }, []);
+
+  const removeSkill = (skillId) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((id) => id !== skillId),
+    }));
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSubmitting(true);
+
+    if (formData.skills.length === 0) {
+      setError("Please select at least one skill.");
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      await profileApi.submitApplication({
+        skills: formData.skills,
+        experience_years: parseInt(formData.experience_years, 10),
+        professional_summary: formData.professional_summary,
+      });
+
+      setDone(true);
+      toast.success("Provider application submitted successfully!");
+    } catch (err) {
+      const errData = err.response?.data;
+      if (errData) {
+        const firstKey = Object.keys(errData)[0];
+        const serverError = Array.isArray(errData[firstKey])
+          ? errData[firstKey][0]
+          : errData[firstKey];
+        setError(serverError || "Submission failed. Please check your inputs.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (done) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-20 text-center">
+      <div className="mx-auto max-w-lg px-4 py-20 text-center animate-fadeIn">
         <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent-soft text-accent">
           <CheckCircle2 className="h-10 w-10" />
         </div>
         <h1 className="mt-6 text-2xl font-bold tracking-tight">Application received!</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Your account has been upgraded to Service Provider. Complete your profile so customers can find you.
+          Your provider application is currently pending admin review. Once approved, your status will update automatically.
         </p>
         <div className="mt-8 flex justify-center gap-2">
           <Button asChild>
             <Link to="/dashboard">Go to dashboard</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/profile">Complete profile</Link>
+            <Link to="/profile">View profile</Link>
           </Button>
         </div>
       </div>
@@ -51,7 +129,7 @@ export default function BecomeProvider() {
         {[
           { icon: Users, title: "12,400+ pros", desc: "Join the largest network of Ethiopian professionals." },
           { icon: TrendingUp, title: "2× more jobs", desc: "Providers on ServiceHub earn 2× more on average." },
-          { icon: BadgeCheck, title: "Free verification", desc: "Get your verified badge in 24 hours." },
+          { icon: BadgeCheck, title: "Free verification", desc: "Get your verified badge upon admin review." },
         ].map((p) => (
           <div key={p.title} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary">
@@ -64,42 +142,115 @@ export default function BecomeProvider() {
       </div>
 
       <form
-        className="mt-10 rounded-2xl border border-border bg-card p-6 shadow-soft sm:p-8"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setDone(true);
-          toast.success("Account upgraded to Service Provider");
-        }}
+        className="mt-10 rounded-2xl border border-border bg-card p-6 shadow-soft sm:p-8 space-y-6"
+        onSubmit={handleSubmit}
       >
-        <h2 className="text-lg font-semibold">Tell us about yourself</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Share your skills and experience so customers know what you can do.
-        </p>
-        <div className="mt-6 grid gap-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="skills">Skills</Label>
-            <Input id="skills" name="skills" required placeholder="e.g. React, Python, Design" />
-            <p className="text-xs text-muted-foreground">Comma-separated list of specialties.</p>
+        <div>
+          <h2 className="text-lg font-semibold">Tell us about yourself</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Share your skills and experience so customers and admins know what you can do.
+          </p>
+        </div>
+
+        {error && (
+        <div className="p-3 text-sm font-medium text-destructive bg-destructive/10 border border-destructive/20 rounded-xl">
+          {error}
+        </div>
+      )}
+
+        <div className="space-y-4">
+          
+          {/* Skill Selector Trigger & Tags Display */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Your Selected Skills *</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSkillModalOpen(true)}
+                className="gap-1.5 text-xs"
+              >
+                <Plus className="h-3.5 w-3.5" /> Select Skills
+              </Button>
+            </div>
+
+            {formData.skills.length === 0 ? (
+              <div 
+                onClick={() => setIsSkillModalOpen(true)}
+                className="border border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors bg-muted/30"
+              >
+                <p className="text-xs text-muted-foreground">No skills selected yet. Click here to open the skill selector.</p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 p-3 border border-border rounded-xl bg-background">
+                {formData.skills.map((skillId) => (
+                  <span
+                    key={skillId}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-primary text-primary-foreground shadow-sm"
+                  >
+                    {allSkillsMap[skillId] || `Skill #${skillId}`}
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skillId)}
+                      className="hover:bg-black/20 rounded-full p-0.5 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Years of Experience */}
           <div className="space-y-1.5">
-            <Label htmlFor="experience">Experience</Label>
+            <Label htmlFor="experience_years">Years of Experience *</Label>
+            <Input
+              id="experience_years"
+              name="experience_years"
+              type="number"
+              min="0"
+              max="50"
+              required
+              placeholder="e.g. 3"
+              value={formData.experience_years}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Professional Summary */}
+          <div className="space-y-1.5">
+            <Label htmlFor="professional_summary">Professional Summary & Experience *</Label>
             <Textarea
-              id="experience"
-              name="experience"
+              id="professional_summary"
+              name="professional_summary"
               required
               rows={5}
-              placeholder="Certifications, past work, years of experience…"
+              placeholder="Certifications, past work history, key proficiencies…"
+              value={formData.professional_summary}
+              onChange={handleChange}
             />
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
           <p className="text-xs text-muted-foreground">By continuing you agree to our provider terms.</p>
-          <Button type="submit" size="lg">
-            Submit application <ArrowRight className="h-4 w-4" />
+          <Button type="submit" size="lg" disabled={submitting}>
+            {submitting ? "Submitting..." : "Submit application"} <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
       </form>
+
+      {/* Skill Selection Popup Modal */}
+      <SkillSelectModal
+        isOpen={isSkillModalOpen}
+        onClose={() => setIsSkillModalOpen(false)}
+        selectedSkillIds={formData.skills}
+        onSave={(newSelectedIds) => {
+          setFormData((prev) => ({ ...prev, skills: newSelectedIds }));
+        }}
+      />
     </div>
   );
 }
