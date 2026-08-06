@@ -4,15 +4,23 @@ from .models import UserProfile, ProviderApplication, Skill
 from .services import submit_provider_application
 from cloudinary.utils import cloudinary_url
 
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ['id', 'name', 'is_active']
+        
 class ProviderApplicationSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(queryset=Skill.objects.filter(is_active=True), many=True )
-
+    skills_detail = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = ProviderApplication
-        fields = ["id", "skills", "experience_years", "professional_summary",  
+        fields = ["id", "skills_detail", "skills", "experience_years", "professional_summary",  
                    "status", "submitted_at"]
         
         read_only_fields = ["id", "status", "submitted_at",]
+
+    def get_skills_detail(self, obj):
+        return SkillSerializer(obj.skills.all(), many=True).data
 
     def create(self, validated_data):
         skills = validated_data.pop('skills', [])

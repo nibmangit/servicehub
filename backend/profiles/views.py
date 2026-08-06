@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
@@ -33,3 +34,8 @@ class MyProfileView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.userprofile
+    
+class SkillListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SkillSerializer
+    queryset = Skill.objects.filter(is_active=True)
