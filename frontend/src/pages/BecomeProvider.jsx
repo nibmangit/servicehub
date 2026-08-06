@@ -1,19 +1,21 @@
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, BadgeCheck, CheckCircle2, TrendingUp, Users, Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { Label } from "../components/ui/Label";
-import { Textarea } from "../components/ui/Textarea";
-import { profileApi } from "../api/profileApi";
-import SkillSelectModal from "../components/profile/SkillSelectModal";
+import PendingApplicationView from "../components/profile/provider/PendingApplicationView";
+import ApprovedApplicationView from "../components/profile/provider/ApprovedApplicationView";
+import RejectedApplicationView from "../components/profile/provider/RejectedApplicationView";
+import ProviderApplicationForm from "../components/profile/provider/ProviderApplicationForm";
+import { profileApi } from "../api/profileApi"; 
+import { useAuth } from "../context/AuthContext";
 
 export default function BecomeProvider() {
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [applicationStatus, setApplicationStatus] = useState("none"); // 'none', 'pending', 'approved', 'rejected'
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [isEditingRejected, setIsEditingRejected] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
    
   const [isSkillModalOpen, setIsSkillModalOpen] = useState(false); 
@@ -25,22 +27,45 @@ export default function BecomeProvider() {
     professional_summary: "",
   });
 
-  // Pre-fetch skill records mapping so we can display selected skill names as tags
   useEffect(() => {
-    const loadSkillNames = async () => {
+    const initData = async () => {
       try {
-        const data = await profileApi.getSkills();
+        // 1. Fetch skills mapping list
+        const skillsData = await profileApi.getSkills();
         const map = {};
-        data.forEach((s) => {
-          map[s.id] = s.name;
-        });
+        skillsData.forEach((s) => { map[s.id] = s.name; });
         setAllSkillsMap(map);
+
+        // 2. Fetch full application details if user has one
+        try {
+          const appData = await profileApi.getApplication?.();
+          if (appData?.status) {
+            setApplicationStatus(appData.status);
+            setRejectionReason(appData.rejection_reason || "");
+            
+            // Pre-fill form state in case user needs to edit/re-apply
+            setFormData({
+              skills: appData.skills || [],
+              experience_years: appData.experience_years || "",
+              professional_summary: appData.professional_summary || "",
+            });
+          }
+        } catch {
+          // Fallback to auth context if application fetch standard endpoint isn't populated
+          if (user?.provider_status) {
+            setApplicationStatus(user.provider_status);
+          } else if (user?.is_provider) {
+            setApplicationStatus("approved");
+          }
+        }
       } catch (err) {
-        console.error("Failed to load skills map:", err);
+        console.error("Failed to load initial provider data:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    loadSkillNames();
-  }, []);
+    initData();
+  }, [user]);
 
   const removeSkill = (skillId) => {
     setFormData((prev) => ({
@@ -65,13 +90,20 @@ export default function BecomeProvider() {
     }
 
     try {
-      await profileApi.submitApplication({
+      const payload = {
         skills: formData.skills,
         experience_years: parseInt(formData.experience_years, 10),
         professional_summary: formData.professional_summary,
-      });
+      };
 
-      setDone(true);
+      if (isEditingRejected) {
+        await profileApi.updateApplication?.(payload);
+      } else {
+        await profileApi.submitApplication(payload);
+      }
+
+      setApplicationStatus("pending");
+      setIsEditingRejected(false);
       toast.success("Provider application submitted successfully!");
     } catch (err) {
       const errData = err.response?.data;
@@ -89,168 +121,45 @@ export default function BecomeProvider() {
     }
   };
 
-  if (done) {
+  if (loading) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-20 text-center animate-fadeIn">
-        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent-soft text-accent">
-          <CheckCircle2 className="h-10 w-10" />
-        </div>
-        <h1 className="mt-6 text-2xl font-bold tracking-tight">Application received!</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Your provider application is currently pending admin review. Once approved, your status will update automatically.
-        </p>
-        <div className="mt-8 flex justify-center gap-2">
-          <Button asChild>
-            <Link to="/dashboard">Go to dashboard</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/profile">View profile</Link>
-          </Button>
-        </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-sm text-muted-foreground animate-pulse">Loading application status...</p>
       </div>
     );
   }
+ 
+  // Render views based on status
+  if (applicationStatus === "pending") {
+    return <PendingApplicationView />;
+  }
 
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:py-16">
-      <div className="text-center">
-        <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
-          <BadgeCheck className="h-3.5 w-3.5" /> For professionals
-        </span>
-        <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-          Become a ServiceHub provider
-        </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-          Reach thousands of customers across Ethiopia. It's free to join.
-        </p>
-      </div>
+  if (applicationStatus === "approved") {
+    return <ApprovedApplicationView />;
+  }
 
-      <div className="mt-10 grid gap-3 sm:grid-cols-3">
-        {[
-          { icon: Users, title: "12,400+ pros", desc: "Join the largest network of Ethiopian professionals." },
-          { icon: TrendingUp, title: "2× more jobs", desc: "Providers on ServiceHub earn 2× more on average." },
-          { icon: BadgeCheck, title: "Free verification", desc: "Get your verified badge upon admin review." },
-        ].map((p) => (
-          <div key={p.title} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary">
-              <p.icon className="h-5 w-5" />
-            </span>
-            <h3 className="mt-4 font-semibold">{p.title}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      <form
-        className="mt-10 rounded-2xl border border-border bg-card p-6 shadow-soft sm:p-8 space-y-6"
-        onSubmit={handleSubmit}
-      >
-        <div>
-          <h2 className="text-lg font-semibold">Tell us about yourself</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Share your skills and experience so customers and admins know what you can do.
-          </p>
-        </div>
-
-        {error && (
-        <div className="p-3 text-sm font-medium text-destructive bg-destructive/10 border border-destructive/20 rounded-xl">
-          {error}
-        </div>
-      )}
-
-        <div className="space-y-4">
-          
-          {/* Skill Selector Trigger & Tags Display */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Your Selected Skills *</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsSkillModalOpen(true)}
-                className="gap-1.5 text-xs"
-              >
-                <Plus className="h-3.5 w-3.5" /> Select Skills
-              </Button>
-            </div>
-
-            {formData.skills.length === 0 ? (
-              <div 
-                onClick={() => setIsSkillModalOpen(true)}
-                className="border border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors bg-muted/30"
-              >
-                <p className="text-xs text-muted-foreground">No skills selected yet. Click here to open the skill selector.</p>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2 p-3 border border-border rounded-xl bg-background">
-                {formData.skills.map((skillId) => (
-                  <span
-                    key={skillId}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-primary text-primary-foreground shadow-sm"
-                  >
-                    {allSkillsMap[skillId] || `Skill #${skillId}`}
-                    <button
-                      type="button"
-                      onClick={() => removeSkill(skillId)}
-                      className="hover:bg-black/20 rounded-full p-0.5 transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Years of Experience */}
-          <div className="space-y-1.5">
-            <Label htmlFor="experience_years">Years of Experience *</Label>
-            <Input
-              id="experience_years"
-              name="experience_years"
-              type="number"
-              min="0"
-              max="50"
-              required
-              placeholder="e.g. 3"
-              value={formData.experience_years}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Professional Summary */}
-          <div className="space-y-1.5">
-            <Label htmlFor="professional_summary">Professional Summary & Experience *</Label>
-            <Textarea
-              id="professional_summary"
-              name="professional_summary"
-              required
-              rows={5}
-              placeholder="Certifications, past work history, key proficiencies…"
-              value={formData.professional_summary}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
-          <p className="text-xs text-muted-foreground">By continuing you agree to our provider terms.</p>
-          <Button type="submit" size="lg" disabled={submitting}>
-            {submitting ? "Submitting..." : "Submit application"} <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
-      </form>
-
-      {/* Skill Selection Popup Modal */}
-      <SkillSelectModal
-        isOpen={isSkillModalOpen}
-        onClose={() => setIsSkillModalOpen(false)}
-        selectedSkillIds={formData.skills}
-        onSave={(newSelectedIds) => {
-          setFormData((prev) => ({ ...prev, skills: newSelectedIds }));
-        }}
+  if (applicationStatus === "rejected" && !isEditingRejected) {
+    return (
+      <RejectedApplicationView 
+        rejectionReason={rejectionReason} 
+        onReapply={() => setIsEditingRejected(true)} 
       />
-    </div>
+    );
+  }
+
+  // Render form (for 'none' state OR when user clicks 'Edit & Re-apply' after rejection)
+  return (
+    <ProviderApplicationForm
+      formData={formData}
+      allSkillsMap={allSkillsMap}
+      isSkillModalOpen={isSkillModalOpen}
+      setIsSkillModalOpen={setIsSkillModalOpen}
+      submitting={submitting}
+      error={error}
+      handleChange={handleChange}
+      handleSubmit={handleSubmit}
+      removeSkill={removeSkill}
+      setFormData={setFormData}
+    />
   );
 }

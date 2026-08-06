@@ -15,9 +15,9 @@ class ProviderApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProviderApplication
         fields = ["id", "skills_detail", "skills", "experience_years", "professional_summary",  
-                   "status", "submitted_at"]
+                   "rejection_reason", "reviewed_at", "reviewed_by", "status", "submitted_at"]
         
-        read_only_fields = ["id", "status", "submitted_at",]
+        read_only_fields = ["id", "status","rejection_reason", "reviewed_at", "reviewed_by", "submitted_at",]
 
     def get_skills_detail(self, obj):
         return SkillSerializer(obj.skills.all(), many=True).data

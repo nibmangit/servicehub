@@ -21,6 +21,8 @@ import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ProviderRouteGuard from "./components/profile/provider/ProviderRouteGuard";
+import VerifyFayda from "./pages/VerifyFayda";
 
 export default function App() {
   return (
@@ -34,7 +36,12 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="browse" element={<Browse />} />
           <Route path="services/:id" element={<ServiceDetail />} />
-          <Route path="become-provider" element={<BecomeProvider />} />
+
+          <Route element={<ProviderRouteGuard />}>
+            <Route path="become-provider" element={<BecomeProvider />} />
+          </Route>
+
+          <Route path="/verify-identity" element={<VerifyFayda />} />
 
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />

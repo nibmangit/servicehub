@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Search, X, Check } from "lucide-react";
-import { Button } from "../ui/Button";
-import { Input } from "../ui/Input";
-import { profileApi } from "../../api/profileApi";
+import { Button } from "../../ui/Button";
+import { Input } from "../../ui/Input";
+import { profileApi } from "../../../api/profileApi";
 import { toast } from "sonner";
 
 export default function SkillSelectModal({ isOpen, onClose, selectedSkillIds, onSave }) {
