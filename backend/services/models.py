@@ -15,6 +15,7 @@ class Service(models.Model):
     category = models.ForeignKey( Category, on_delete=models.SET_NULL, null=True, related_name="services" )
     title = models.CharField(max_length=200)
     description = models.TextField()
+    location = models.CharField(max_length=150, null=False)
 
     price_type = models.CharField(max_length=20, choices=PRICE_TYPES, default="negotiable" )
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True )

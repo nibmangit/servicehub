@@ -39,6 +39,11 @@ export const servicesApi = {
         return Array.isArray(response.data) ? response.data : [];
     },
 
+    getServices: async (params = {}) => {
+        const response = await client.get('services/', { params });
+        return response.data;
+    },
+
     getServiceById: async (serviceId) => {
         const response = await client.get(`services/${serviceId}/`);
         if (response.data && Array.isArray(response.data.results)) {
