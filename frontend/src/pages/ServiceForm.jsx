@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Image as ImageIcon, Upload, X, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -14,11 +14,15 @@ import {
   SelectValue,
 } from "../components/ui/Select";
 import { Textarea } from "../components/ui/Textarea";
-import { servicesApi } from "../api/servicesApi";
+import { servicesApi } from "../api/servicesApi"; 
 
-export default function NewService() {
+export default function ServiceForm() {
+  const { id } = useParams();
+  const isEditing = Boolean(id);
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(isEditing);
   const [categories, setCategories] = useState([]);
   const [fetchingCategories, setFetchingCategories] = useState(true);
 
@@ -32,24 +36,43 @@ export default function NewService() {
     price: "",
   });
 
-  // Real image files state (array of File objects)
-  const [images, setImages] = useState([]);
+  // Image states: existing server images (for edit mode) and new local files
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
 
-  // Fetch categories from backend on mount
+  // Fetch categories and service data (if editing) on mount
   useEffect(() => {
-    const fetchCategories = async () => {
+    const loadInitialData = async () => {
       try {
-        const data = await servicesApi.getCategories();
-        setCategories(data);
+        const categoriesData = await servicesApi.getCategories();
+        setCategories(categoriesData);
+
+        if (isEditing) {
+          const service = await servicesApi.getServiceById(id);
+          // console.log(serviceRes)
+          // const service = serviceRes.data;
+          setFormData({
+            title: service.title || "",
+            category: String(service.category || ""),
+            duration: service.duration || "",
+            description: service.description || "",
+            price_type: service.price_type || "negotiable",
+            price: service.price || "",
+          });
+          setExistingImages(service.images || []);
+        }
       } catch (err) {
-        console.error("Failed to load categories:", err);
-        toast.error("Could not load categories.");
+        console.error("Failed to load form data:", err);
+        toast.error("Could not load service details.");
+        if (isEditing) navigate("/services/");
       } finally {
         setFetchingCategories(false);
+        setFetchingData(false);
       }
     };
-    fetchCategories();
-  }, []);
+
+    loadInitialData();
+  }, [id, isEditing, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,16 +86,28 @@ export default function NewService() {
   const handleImageUpload = (e) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      if (images.length + selectedFiles.length > 5) {
-        toast.error("You can upload a maximum of 5 images.");
+      const totalCount = existingImages.length + newImages.length + selectedFiles.length;
+      if (totalCount > 5) {
+        toast.error("You can upload a maximum of 5 images total.");
         return;
       }
-      setImages((prev) => [...prev, ...selectedFiles]);
+      setNewImages((prev) => [...prev, ...selectedFiles]);
     }
   };
 
-  const removeImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+  const removeExistingImage = async (imageId) => {
+    try {
+      await servicesApi.deleteServiceImage(imageId);
+      setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+      toast.success("Image removed");
+    } catch (err) {
+      console.error("Failed to delete image:", err);
+      toast.error("Could not delete image.");
+    }
+  };
+
+  const removeNewImage = (index) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -86,7 +121,6 @@ export default function NewService() {
     }
 
     try {
-      // Step 1: Create the service record
       const payload = {
         title: formData.title,
         category: parseInt(formData.category, 10),
@@ -95,30 +129,36 @@ export default function NewService() {
         price: formData.price_type !== "negotiable" && formData.price ? parseFloat(formData.price) : null,
         duration: formData.duration || null,
       };
-      console.log("Creating service with payload:", payload);
-      const newService = await servicesApi.createService(payload);
-      console.log("Service created successfully:", newService);
-      const serviceId = newService.id;
 
-      // Step 2: Upload selected images sequentially if any exist
-      if (images.length > 0 && serviceId) {
-        for (let i = 0; i < images.length; i++) {
-          const isPrimary = i === 0;
-          await servicesApi.uploadServiceImage(serviceId, images[i], isPrimary);
+      let serviceId = id;
+
+      if (isEditing) {
+        await servicesApi.updateService(id, payload);
+        toast.success("Service updated successfully.");
+      } else {
+        const newService = await servicesApi.createService(payload);
+        serviceId = newService.id;
+        toast.success("Service saved", { description: "Your listing is now live." });
+      }
+
+      // Upload newly selected images sequentially if any exist
+      if (newImages.length > 0 && serviceId) {
+        for (let i = 0; i < newImages.length; i++) {
+          const isPrimary = existingImages.length === 0 && i === 0;
+          await servicesApi.uploadServiceImage(serviceId, newImages[i], isPrimary);
         }
       }
 
-      toast.success("Service saved", { description: "Your listing is now live." });
       navigate("/services");
     } catch (err) {
-      console.error("Failed to create service:", err);
+      console.error("Failed to save service:", err);
       const errData = err.response?.data;
       if (errData) {
         const firstKey = Object.keys(errData)[0];
         const serverError = Array.isArray(errData[firstKey])
           ? errData[firstKey][0]
           : errData[firstKey];
-        toast.error(serverError || "Failed to create service.");
+        toast.error(serverError || "Failed to save service.");
       } else {
         toast.error("An unexpected error occurred. Please try again.");
       }
@@ -127,8 +167,16 @@ export default function NewService() {
     }
   };
 
-  // Find selected category name for the live preview card
   const selectedCategoryObj = categories.find((c) => String(c.id) === String(formData.category));
+  const previewImageSrc = existingImages[0]?.image || (newImages[0] ? URL.createObjectURL(newImages[0]) : null);
+
+  if (fetchingData) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8">
@@ -140,9 +188,11 @@ export default function NewService() {
       </Link>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Create a new service</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {isEditing ? "Edit service" : "Create a new service"}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add details customers will see before they book.
+            {isEditing ? "Update your listing details and photos." : "Add details customers will see before they book."}
           </p>
         </div>
       </div>
@@ -151,43 +201,51 @@ export default function NewService() {
         <div className="space-y-6">
           <Section title="Photos" desc="Upload up to 5 photos. First photo is the cover.">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {images.map((file, i) => {
-                const previewUrl = URL.createObjectURL(file);
-                return (
-                  <div
-                    key={i}
-                    className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-muted"
+              {/* Existing Server Images */}
+              {existingImages.map((img) => (
+                <div key={img.id} className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-muted">
+                  <img src={img.image} alt="" className="h-full w-full object-cover" />
+                  {img.is_primary && (
+                    <span className="absolute bottom-0 inset-x-0 bg-primary/90 text-[10px] text-primary-foreground text-center font-medium py-0.5">
+                      Cover
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeExistingImage(img.id)}
+                    className="absolute right-2 top-2 rounded-full bg-background/95 p-1 shadow-soft opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-label="Remove"
                   >
-                    <img src={previewUrl} alt="" className="h-full w-full object-cover" />
-                    {i === 0 && (
-                      <span className="absolute bottom-0 inset-x-0 bg-primary/90 text-[10px] text-primary-foreground text-center font-medium py-0.5">
-                        Cover
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeImage(i)}
-                      className="absolute right-2 top-2 rounded-full bg-background/95 p-1 shadow-soft opacity-0 transition-opacity group-hover:opacity-100"
-                      aria-label="Remove"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                );
-              })}
-              {images.length < 5 && (
+                    <X className="h-3.5 w-3.5 cursor-pointer" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Newly Picked Local Files */}
+              {newImages.map((file, i) => (
+                <div key={`new-${i}`} className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-muted">
+                  <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+                  <span className="absolute bottom-0 inset-x-0 bg-amber-500/90 text-[10px] text-white text-center font-medium py-0.5">
+                    New
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeNewImage(i)}
+                    className="absolute right-2 top-2 rounded-full bg-background/95 p-1 shadow-soft opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-label="Remove"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              {existingImages.length + newImages.length < 5 && (
                 <label className="grid aspect-square place-items-center rounded-xl border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:bg-primary-soft/40 hover:text-primary cursor-pointer">
                   <div className="text-center">
                     <Upload className="mx-auto h-5 w-5" />
                     <div className="mt-1 text-xs">Upload</div>
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
+                  <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
                 </label>
               )}
             </div>
@@ -294,12 +352,8 @@ export default function NewService() {
               <h3 className="text-sm font-semibold">Preview</h3>
               <div className="mt-3 overflow-hidden rounded-xl border border-border">
                 <div className="grid aspect-[4/3] place-items-center bg-muted text-muted-foreground">
-                  {images[0] ? (
-                    <img
-                      src={URL.createObjectURL(images[0])}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
+                  {previewImageSrc ? (
+                    <img src={previewImageSrc} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <ImageIcon className="h-8 w-8" />
                   )}
@@ -323,7 +377,7 @@ export default function NewService() {
             </div>
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Publish service
+              {isEditing ? "Save changes" : "Publish service"}
             </Button>
           </div>
         </aside>

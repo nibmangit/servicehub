@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Service, ServiceImage
+from categories.serializers import CategorySerializer
 
 class ServiceImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -15,10 +16,11 @@ class ServiceImageSerializer(serializers.ModelSerializer):
 
 class ServiceSerializer(serializers.ModelSerializer): 
     images = ServiceImageSerializer(many=True, read_only=True)
+    category_detail = CategorySerializer(source='category', read_only=True)
     
     class Meta:
         model = Service
-        fields = ['id', 'provider', 'category', 'title', 'description', 'price_type', 'price', 'duration', 'average_rating', 'review_count', 'is_active', 'images', 'created_at', 'updated_at' ] 
+        fields = ['id', 'provider', 'category', 'category_detail', 'title', 'description', 'price_type', 'price', 'duration', 'average_rating', 'review_count', 'is_active', 'images', 'created_at', 'updated_at' ] 
         read_only_fields = ['id', 'provider', 'average_rating', 'review_count', 'created_at', 'updated_at']
         
 class ServiceImageUploadSerializer(serializers.ModelSerializer):

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView 
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, DestroyAPIView, ListCreateAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView,RetrieveUpdateDestroyAPIView, DestroyAPIView, ListCreateAPIView, CreateAPIView
 from .permissions import IsProviderOrReadOnly, IsServiceProviderOwner, IsImageOwner
 from django.shortcuts import get_object_or_404
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -13,7 +13,7 @@ from .models import Service, ServiceImage
 from .serializers import *
 from .filters import ServiceFilter
 
-class ServiceListCreateView(ListCreateAPIView):
+class ServiceListCreateView(ListAPIView):
     permission_classes = [IsProviderOrReadOnly]
     serializer_class = ServiceSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -22,9 +22,6 @@ class ServiceListCreateView(ListCreateAPIView):
     search_fields = ['title', 'description', 'category__name'] 
     ordering_fields = ['price', 'average_rating', 'created_at'] 
     ordering = ['-created_at']
-
-    def perform_create(self, serializer): 
-        serializer.save(provider=self.request.user.providerprofile )
     
     def get_queryset(self):
         return (
@@ -34,6 +31,20 @@ class ServiceListCreateView(ListCreateAPIView):
             .prefetch_related("images")
         )
         
+class MyServicesListView(ListCreateAPIView):
+    serializer_class = ServiceSerializer
+    permission_classes = [IsAuthenticated, IsProviderOrReadOnly]
+    
+    def get_queryset(self):
+        return (
+            Service.objects
+            .filter(provider=self.request.user.providerprofile)
+            .select_related("provider", "category")
+            .prefetch_related("images")
+        )
+
+    def perform_create(self, serializer): 
+        serializer.save(provider=self.request.user.providerprofile)
     
 class ServiceDetailView(RetrieveUpdateDestroyAPIView): 
     serializer_class = ServiceSerializer 
@@ -42,7 +53,6 @@ class ServiceDetailView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return (
             Service.objects
-            .filter(is_active=True)
             .select_related("provider", "category")
             .prefetch_related("images")
         )

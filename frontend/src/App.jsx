@@ -10,7 +10,7 @@ import Home from "./pages/Home";
 import { Dashboard } from "./pages/Dashboard";
 import { Browse } from "./pages/Browse";
 import { ServiceDetail } from "./pages/ServiceDetail";
-import NewService from "./pages/NewService";
+import ServiceForm from "./pages/ServiceForm";
 import Profile from "./pages/Profile";
 import BecomeProvider from "./pages/BecomeProvider";
 import MyServices from "./pages/MyServices";
@@ -50,7 +50,8 @@ export default function App() {
           <Route element={<DashboardLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="services" element={<MyServices />} />
-            <Route path="services/new" element={<NewService />} />
+            <Route path="services/new" element={<ServiceForm />} />
+            <Route path="/services/:id/edit" element={<ServiceForm />} />
             <Route path="requests" element={<Requests />} />
             <Route path="reviews" element={<ReviewsPage />} />
             <Route path="notifications" element={<Notifications />} />
