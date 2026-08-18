@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { BadgeCheck, Calendar, CheckCircle2, Clock, Heart, MapPin, MessageCircle, Share2, ShieldCheck, Star } from "lucide-react";
+import { BadgeCheck, Calendar, CheckCircle2, Clock, Heart, Edit, MapPin, MessageCircle, Share2, ShieldCheck, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -27,6 +27,7 @@ export function ServiceDetail() {
       try {
         const data = await servicesApi.getServiceById(id);
         setService(data);
+        console.log(data)
 
         // Fetch other services for the related list
         const allServices = await servicesApi.getServices();
@@ -103,6 +104,15 @@ export function ServiceDetail() {
             </div>
           </div>
           <div className="flex shrink-0 gap-2">
+            {service.is_owner && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate(`/services/${service.id}/edit`)}
+              >
+                <Edit className="h-4 w-4 mr-1.5" /> Edit Service
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => {
               navigator.clipboard.writeText(window.location.href);
               toast.success("Link copied to clipboard!");

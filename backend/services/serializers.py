@@ -20,10 +20,11 @@ class ServiceSerializer(serializers.ModelSerializer):
     category_detail = CategorySerializer(source='category', read_only=True) 
     provider_name = serializers.CharField(source='provider.user.userprofile.full_name', read_only=True)
     provider_avatar = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
     
     class Meta:
         model = Service
-        fields = ['id', 'provider', 'provider_avatar', 'provider_name', 'category', 'category_detail', 'title', 'description', 'location', 'price_type', 'price', 'duration', 'average_rating', 'review_count', 'is_active', 'images', 'created_at', 'updated_at' ] 
+        fields = ['id', 'provider', 'is_owner', 'provider_avatar', 'provider_name', 'category', 'category_detail', 'title', 'description', 'location', 'price_type', 'price', 'duration', 'average_rating', 'review_count', 'is_active', 'images', 'created_at', 'updated_at' ] 
         read_only_fields = ['id', 'provider', 'average_rating', 'review_count', 'created_at', 'updated_at']
         
     def get_provider_avatar(self, obj):
@@ -34,6 +35,11 @@ class ServiceSerializer(serializers.ModelSerializer):
         except (AttributeError, ValueError):
             pass
         return None
+    def get_is_owner(self, obj):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return request.user == obj.provider.user
+        return False
         
 class ServiceImageUploadSerializer(serializers.ModelSerializer):
     class Meta:

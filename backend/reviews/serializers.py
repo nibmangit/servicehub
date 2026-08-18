@@ -3,10 +3,22 @@ from .models import Review
 from .services import ReviewService
 
 class ReviewSerializer(serializers.ModelSerializer):
+    client_name = serializers.CharField(source='request.customer.userprofile.full_name', read_only=True)
+    client_avatar = serializers.SerializerMethodField(read_only=True)
+    
     class Meta:
         model = Review
         fields = ['id', 'request', 'rating', 'comment', 'created_at', 'updated_at']
         read_only_fields = ["created_at", "updated_at"]
+        
+    def get_client_avatar(self, obj):
+        try:
+            profile = obj.request.customer.userprofile
+            if profile.avatar:
+                return profile.avatar.url
+        except (AttributeError, ValueError):
+            pass
+        return None
 
     def validate(self, attrs):
         request_obj = attrs.get('request')
