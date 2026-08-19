@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import MainLayout from './components/MainLayout';
+import ProfilePage from './features/profiles/ProfilePage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -58,6 +59,7 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPlaceholder />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/services" element={<PlaceholderPage title="Service Catalog & Management" />} />
           <Route path="/requests" element={<PlaceholderPage title="Client & Provider Requests" />} />
           <Route path="/chats" element={<PlaceholderPage title="Messages & Conversations Inbox" />} />
