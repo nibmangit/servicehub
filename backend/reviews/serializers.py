@@ -8,7 +8,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Review
-        fields = ['id', 'request', 'rating', 'comment', 'created_at', 'updated_at']
+        fields = ['id', 'request','client_name', 'client_avatar', 'rating', 'comment', 'created_at', 'updated_at']
         read_only_fields = ["created_at", "updated_at"]
         
     def get_client_avatar(self, obj):
