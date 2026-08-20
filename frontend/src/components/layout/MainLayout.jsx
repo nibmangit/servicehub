@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, NavLink } from 'react-router-dom';
 import { Bell, Sun, Moon, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import CompleteProfileModal from '../../features/profiles/CompleteProfileModal';
+import CompleteProfileModal from '../../features/profile/CompleteProfileModal';
 
+const navLinkClass = ({ isActive }) =>
+  `px-3 py-2 rounded-(--radius-md) text-sm font-medium transition-colors ${
+    isActive
+      ? 'text-(--color-primary) bg-(--color-primary-soft)'
+      : 'text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-(--color-muted)'
+  }`;
 
 export default function MainLayout() {
   const { user, logout, updateUser } = useAuth();
@@ -16,12 +22,27 @@ export default function MainLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-(--color-background)">
       <header className="border-b border-(--color-border) bg-(--color-card)">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/dashboard" className="text-lg font-bold text-(--color-primary)">
-            ServiceHub
-          </Link>
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <Link to="/dashboard" className="text-lg font-bold text-(--color-primary) shrink-0">
+              ServiceHub
+            </Link>
 
-          <div className="flex items-center gap-2">
+            <nav className="hidden md:flex items-center gap-1">
+              <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
+              <NavLink to="/services" className={navLinkClass}>Browse Services</NavLink>
+              <NavLink to="/requests" className={navLinkClass}>My Requests</NavLink>
+              <NavLink to="/chats" className={navLinkClass}>Messages</NavLink>
+
+              {user?.is_provider ? (
+                <NavLink to="/my-services" className={navLinkClass}>My Services</NavLink>
+              ) : (
+                <NavLink to="/apply-provider" className={navLinkClass}>Become a Provider</NavLink>
+              )}
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={toggleTheme}
               aria-label="Toggle theme"
@@ -30,13 +51,14 @@ export default function MainLayout() {
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            <button
+            <Link
+              to="/notifications"
               aria-label="Notifications"
               className="p-2 rounded-(--radius-md) text-(--color-muted-foreground) hover:bg-(--color-muted) transition-colors relative"
             >
               <Bell size={18} />
               {/* unread dot wired up in step 4 */}
-            </button>
+            </Link>
 
             <div className="relative">
               <button
@@ -54,6 +76,13 @@ export default function MainLayout() {
                   <div className="px-3 py-2 text-sm text-(--color-muted-foreground) truncate border-b border-(--color-border)">
                     {user?.email}
                   </div>
+                  <Link
+                    to="/profile"
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-3 py-2 text-sm text-(--color-foreground) hover:bg-(--color-muted) transition-colors"
+                  >
+                    My Profile
+                  </Link>
                   <button
                     onClick={logout}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-(--color-destructive) hover:bg-(--color-muted) transition-colors"

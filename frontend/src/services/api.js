@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// Base URL for your Django backend
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -9,7 +8,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
- 
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -20,31 +19,31 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
- 
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
- 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem('refresh_token');
 
       if (refreshToken) {
-        try { 
+        try {
           const response = await axios.post(`${BASE_URL}/auth/refresh/`, {
             refresh: refreshToken,
           });
-          
-          const newAccessToken = response.data.access;
-          localStorage.setItem('access_token', newAccessToken);
-           
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          const { access, refresh } = response.data;
+          localStorage.setItem('access_token', access); 
+          if (refresh) {
+            localStorage.setItem('refresh_token', refresh);
+          }
+          originalRequest.headers.Authorization = `Bearer ${access}`;
           return api(originalRequest);
-        } catch (refreshError) { 
+        } catch (refreshError) {
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
-          window.location.href = '/login'; 
+          window.location.href = '/login';
           return Promise.reject(refreshError);
         }
       }
