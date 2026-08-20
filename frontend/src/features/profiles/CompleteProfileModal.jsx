@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { profileApi } from '../../services/profileApi';
 
-export default function CompleteProfileModal({ profile, onProfileUpdated }) {
-  // If full_name exists and is not empty, don't show the modal
+export default function CompleteProfileModal({ profile, onProfileUpdated }) { 
+  
   if (profile && profile.full_name && profile.full_name.trim() !== '') {
     return null;
   }

@@ -4,7 +4,7 @@ import { accountApi } from "../services/accountApi";
 const AuthContext = createContext()
 export const AuthProvider = ({children}) => {
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(()=> {
         const initializeAuth = async () =>{
@@ -64,8 +64,12 @@ export const AuthProvider = ({children}) => {
         window.location.href = '/login';
     };
 
+    const updateUser = (updatedProfile) => {
+    setUser(updatedProfile);
+  };
+
     return(
-        <AuthContext.Provider value={{user, login, register, logout, loading}}>
+        <AuthContext.Provider value={{user, login, register, logout, loading, updateUser}}>
             {children}
         </AuthContext.Provider>
     )
