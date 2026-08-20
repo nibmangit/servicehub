@@ -47,6 +47,7 @@ function SidebarNav({ isProvider, onNavigate }) {
 export default function DashboardLayout() {
   const { user, updateUser } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  console.log("user: ", user);
 
   const profileIncomplete = !user?.full_name || user.full_name.trim() === '';
 

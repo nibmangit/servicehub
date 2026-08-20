@@ -19,15 +19,15 @@ import LandingPage from './features/LandingPaga';
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-
+      <Routes> 
         {/* Public browsing — same layout whether logged in or not */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/services" element={<ServicesPage />} />
           {/* /services/:id lands here once we build Service Detail */}
+
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Route>
 
         {/* Authenticated app, sidebar layout */}
