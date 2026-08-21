@@ -5,7 +5,7 @@ from .models import ServiceRequest
 from notifications.services import NotificationService
 
 ALLOWED_TRANSITIONS = {
-    "PENDING": ["ACCEPTED", "REJECTED"],
+    "PENDING": ["ACCEPTED", "REJECTED", "CANCELLED"],
     "ACCEPTED": ["IN_PROGRESS"],
     "IN_PROGRESS": ["COMPLETED"],
 }

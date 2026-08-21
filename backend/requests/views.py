@@ -10,6 +10,7 @@ from notifications.services import NotificationService
 class RequestListCreateView(ListCreateAPIView):
     serializer_class = ServiceRequestSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = ['service', 'status']
     
     def get_queryset(self):
         user = self.request.user
@@ -61,3 +62,16 @@ class RequestStatusUpdateView(UpdateAPIView):
             )
 
         return ServiceRequest.objects.filter(customer=user)
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # 1. Validate and update using RequestStatusUpdateSerializer
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        updated_instance = serializer.save()
+
+        # 2. Return the full object representation using ServiceRequestSerializer so the frontend keeps its ID
+        response_serializer = ServiceRequestSerializer(updated_instance, context={'request': request})
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

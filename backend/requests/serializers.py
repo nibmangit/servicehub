@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import ServiceRequest
+from reviews.models import Review
 from .services import ServiceRequestService 
 from django.utils import timezone
 
@@ -7,13 +8,20 @@ from django.utils import timezone
 class ServiceRequestSerializer(serializers.ModelSerializer):
     start_otp = serializers.SerializerMethodField()
     complete_otp = serializers.SerializerMethodField()
+    
+    service_title = serializers.CharField(source='service.title', read_only=True)
+    customer_email = serializers.CharField(source='customer.email', read_only=True)
+    provider_email = serializers.CharField(source='provider.user.email', read_only=True)
+    provider_name = serializers.CharField(source='provider.user.userprofile.full_name', read_only=True)
+    review = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceRequest
         fields = [
-            'id', 'customer', 'provider', 'service', 'description',
+            'id', 'customer', 'provider', 'service', 'service_title',
+            'customer_email', 'provider_email', 'provider_name', 'description',
             'preferred_date', 'address', 'status', 'rejection_reason',
-            'agreed_price', 'start_otp', 'complete_otp',
+            'agreed_price', 'start_otp', 'complete_otp', 'review',
             'completed_at', 'created_at', 'updated_at'
         ]
         read_only_fields = [
@@ -21,6 +29,13 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
             'agreed_price', 'start_otp', 'complete_otp',
             'completed_at', 'created_at', 'updated_at'
         ]
+        
+    def get_review(self, obj):
+        try:
+            r = obj.review
+            return {"rating": r.rating, "comment": r.comment, "created_at": r.created_at}
+        except Review.DoesNotExist:
+            return None
 
     def validate(self, attrs):
         service = attrs.get('service')
@@ -41,6 +56,18 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
 
         if preferred_date and preferred_date <= timezone.now():
             raise serializers.ValidationError("Invalid date.")
+        
+        active_statuses = ['PENDING', 'ACCEPTED', 'IN_PROGRESS']
+        existing_request = ServiceRequest.objects.filter(
+            customer=user,
+            service=service,
+            status__in=active_statuses
+        ).exists()
+
+        if existing_request:
+            raise serializers.ValidationError(
+                "You already have an active or pending request for this service."
+            )
 
         return attrs
 
