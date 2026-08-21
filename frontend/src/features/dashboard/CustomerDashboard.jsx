@@ -57,7 +57,8 @@ export default function CustomerDashboard({ data }) {
           ) : (
             <ul className="divide-y divide-(--color-border)">
               {recent_requests.map((r) => (
-                <li key={r.id} className="px-5 py-3.5 flex items-center justify-between gap-3">
+                <Link to = {`/requests/${r.id}`}>
+                <li key={r.id} className="px-5 py-3.5 flex items-center justify-between gap-3 hover:bg-muted/50 transition-colors">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-(--color-foreground) truncate">{r.service__title}</p>
                     <p className="text-xs text-(--color-muted-foreground) truncate">
@@ -66,6 +67,7 @@ export default function CustomerDashboard({ data }) {
                   </div>
                   <StatusBadge status={r.status} />
                 </li>
+                </Link>
               ))}
             </ul>
           )}
@@ -83,7 +85,7 @@ export default function CustomerDashboard({ data }) {
           ) : (
             <ul className="divide-y divide-(--color-border)">
               {recent_conversations.map((c) => (
-                <Link key={c.id} to={`/messages/${c.id}`} className="block hover:bg-(--color-muted)/50 transition-colors">
+                <Link key={c.id} to={`/messages/${c.id}`} className="block hover:bg-muted/50 transition-colors">
                   <li className="px-5 py-3.5">
                     <p className="text-sm font-medium text-(--color-foreground) truncate">{c.request__service__title}</p>
                     <p className="text-xs text-(--color-muted-foreground)">Last active: {formatDateTime(c.updated_at)}</p>

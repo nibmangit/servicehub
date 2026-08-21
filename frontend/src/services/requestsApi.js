@@ -7,9 +7,8 @@ export const requestsApi = {
     return response.data;
   },
 
-  // GET /api/requests/  (both roles, backend filters by user automatically)
-  getRequests: async () => {
-    const response = await api.get('requests/');
+  getRequests: async (filters = {}) => {
+    const response = await api.get('requests/', { params: filters });
     return response.data;
   },
 

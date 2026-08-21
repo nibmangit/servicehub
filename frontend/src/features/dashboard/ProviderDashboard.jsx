@@ -49,7 +49,8 @@ export default function ProviderDashboard({ data }) {
           ) : (
             <ul className="divide-y divide-(--color-border)">
               {recent_requests.map((r) => (
-                <li key={r.id} className="px-5 py-3.5 flex items-center justify-between gap-3">
+                <Link to={`/requests/${r.id}`} >
+                <li key={r.id} className="px-5 py-3.5 flex items-center justify-between gap-3 hover:bg-muted/50 transition-colors">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-(--color-foreground) truncate">{r.service__title}</p>
                     <p className="text-xs text-(--color-muted-foreground) truncate">
@@ -58,6 +59,7 @@ export default function ProviderDashboard({ data }) {
                   </div>
                   <StatusBadge status={r.status} />
                 </li>
+                </Link>
               ))}
             </ul>
           )}
@@ -72,7 +74,8 @@ export default function ProviderDashboard({ data }) {
           ) : (
             <ul className="divide-y divide-(--color-border)">
               {recent_reviews.map((r, i) => (
-                <li key={i} className="px-5 py-3.5">
+                <Link to={`/reviews/${r.id}`} >
+                <li key={i} className="px-5 py-3.5 hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-1 mb-1">
                     {Array.from({ length: 5 }).map((_, idx) => (
                       <Star
@@ -87,6 +90,7 @@ export default function ProviderDashboard({ data }) {
                     {r.request__customer__email} · {formatDate(r.created_at)}
                   </p>
                 </li>
+                </Link>
               ))}
             </ul>
           )}

@@ -127,7 +127,7 @@ export default function ApplyProviderPage() {
   // If application is Pending or Approved, show a read-only details view instead of the form
   if (providerStatus === 'pending' || providerStatus === 'approved') {
     return (
-      <div className="w-full max-w-2xl mx-auto space-y-6 pb-12">
+      <div className="w-full mx-auto space-y-6 pb-12">
         <button onClick={() => navigate('/profile')} className="flex items-center gap-1.5 text-sm text-(--color-muted-foreground) hover:text-(--color-foreground) cursor-pointer">
           <ArrowLeft size={16} /> Back to Profile
         </button>
@@ -200,7 +200,7 @@ export default function ApplyProviderPage() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6 pb-12">
+    <div className="w-full mx-auto space-y-6 pb-12">
       
       <div className="flex items-center justify-between border-b border-(--color-border) pb-6">
         <div>

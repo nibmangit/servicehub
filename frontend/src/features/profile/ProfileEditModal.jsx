@@ -40,16 +40,15 @@ export default function ProfileEditModal({ profile, isOpen, onClose, onSave }) {
       const dataToSend = new FormData();
        
       if (isProvider) {
+        // Providers only send the bio update to avoid type mismatch errors on locked fields
         dataToSend.append('bio', formData.bio || ''); 
-        dataToSend.append('full_name', profile.full_name);
-        dataToSend.append('phone', profile.phone || '');
-        dataToSend.append('city', profile.city || '');
       } else {
-        // Customers can edit all standard fields
+        // Customers edit standard fields
         dataToSend.append('full_name', formData.full_name);
-        dataToSend.append('phone', formData.phone);
-        dataToSend.append('city', formData.city);
+        dataToSend.append('phone', formData.phone || '');
+        dataToSend.append('city', formData.city || '');
         
+        // Only append avatar if a brand new file was chosen
         if (avatarFile) {
           dataToSend.append('avatar', avatarFile);
         }
@@ -59,7 +58,7 @@ export default function ProfileEditModal({ profile, isOpen, onClose, onSave }) {
       onClose();
     } catch (err) {
       console.error("Failed to update profile", err);
-      setError(err.response?.data?.detail || 'Failed to update profile.');
+      setError(err.response?.data?.detail || err.response?.data?.non_field_errors?.[0] || 'Failed to update profile.');
     } finally {
       setSubmitting(false);
     }

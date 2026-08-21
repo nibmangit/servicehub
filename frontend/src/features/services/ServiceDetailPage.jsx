@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MapPin, Star, Clock, ArrowLeft, Share2, Heart, MessageSquare, ShieldCheck, CheckCircle2, Calendar } from 'lucide-react';
+import { MapPin, Star, Clock, ArrowLeft, Share2, Heart, MessageSquare, ShieldCheck, CheckCircle2, Calendar, AlertCircle } from 'lucide-react';
 import { servicesApi } from '../../services/servicesApi';
 import { reviewsApi } from '../../services/reviewsApi';
+import { requestsApi } from '../../services/requestsApi';
 import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../lib/priceFormat';
 import RequestServiceModal from '../../components/requests/RequestServiceModal';
 import ReviewsList from '../../components/reviews/ReviewsList';
+
+const ACTIVE_STATUSES = ['PENDING', 'ACCEPTED', 'IN_PROGRESS'];
 
 export default function ServiceDetailPage() {
   const { id } = useParams();
@@ -20,9 +23,12 @@ export default function ServiceDetailPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
-  
+
   const [isFavorite, setIsFavorite] = useState(false);
   const [shareFeedback, setShareFeedback] = useState(false);
+
+  const [existingRequest, setExistingRequest] = useState(null);
+  const [checkingExisting, setCheckingExisting] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -36,6 +42,7 @@ export default function ServiceDetailPage() {
           servicesApi.getService(id),
           reviewsApi.getServiceReviews(id),
         ]);
+
         if (!cancelled) {
           setService(serviceData);
           setReviews(reviewsData.results || []);
@@ -51,14 +58,34 @@ export default function ServiceDetailPage() {
     load();
     return () => { cancelled = true; };
   }, [id]);
-
-  const handleRequestClick = () => {
+ 
+  useEffect(() => {
     if (!user) {
-      navigate('/login');
+      setCheckingExisting(false);
       return;
     }
-    setModalOpen(true);
-  };
+
+    let cancelled = false;
+    setCheckingExisting(true);
+
+    requestsApi.getRequests({ service: id })
+      .then((data) => {
+        if (cancelled) return;
+        const results = data.results || data;
+        const active = results.find(
+          (r) => r.customer_email === user.email && ACTIVE_STATUSES.includes(r.status)
+        );
+        setExistingRequest(active || null);
+      })
+      .catch(() => { 
+        if (!cancelled) setExistingRequest(null);
+      })
+      .finally(() => {
+        if (!cancelled) setCheckingExisting(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [id, user]);
 
   const handleShare = async () => {
     const shareData = {
@@ -85,8 +112,16 @@ export default function ServiceDetailPage() {
     if (!user) {
       navigate('/login');
       return;
-    }
+    } 
     navigate(`/messages?provider=${service.provider_id || service.provider_email}`);
+  };
+
+  const handleRequestClick = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    setModalOpen(true);
   };
 
   if (loading) {
@@ -117,16 +152,16 @@ export default function ServiceDetailPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-(--color-background) py-8 px-4 sm:px-6 lg:px-8 pb-24">
       <div className="max-w-4xl mx-auto space-y-6">
-         
-        <Link 
-          to="/services" 
+
+        <Link
+          to="/services"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-(--color-muted-foreground) hover:text-(--color-primary) transition-colors"
         >
           <ArrowLeft size={16} /> Back to Services
         </Link>
- 
+
         <div className="bg-(--color-card) border border-(--color-border) rounded-(--radius-2xl) shadow-elevated p-6 sm:p-8 space-y-6">
-          
+
           {/* TOP SECTION: Title Info on Left, Share/Favorite Buttons on Right */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-6 border-b border-(--color-border)">
             <div className="space-y-2">
@@ -138,7 +173,7 @@ export default function ServiceDetailPage() {
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-(--color-foreground) mt-1">
                 {service.title}
               </h1>
-              
+
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-sm text-(--color-muted-foreground)">
                 <span className="flex items-center gap-1.5 font-medium text-(--color-foreground)">
                   <MapPin size={16} className="text-(--color-primary)" /> {service.location}
@@ -151,7 +186,7 @@ export default function ServiceDetailPage() {
                 {service.review_count > 0 ? (
                   <span className="flex items-center gap-1.5 font-medium">
                     <Star size={16} className="text-(--color-warning) fill-(--color-warning)" />
-                    <strong className="text-(--color-foreground)">{service.average_rating.toFixed(1)}</strong> 
+                    <strong className="text-(--color-foreground)">{service.average_rating.toFixed(1)}</strong>
                     <span>({service.review_count} {service.review_count === 1 ? 'review' : 'reviews'})</span>
                   </span>
                 ) : (
@@ -261,9 +296,21 @@ export default function ServiceDetailPage() {
           {!service.is_owner && (
             <div className="pt-2">
               {requestSent ? (
-                <div className="p-4 rounded-xl bg-(--color-success)/10 text-(--color-success) text-sm border border-(--color-success)/20 flex items-center gap-2.5 shadow-soft">
+                <div className="p-4 rounded-xl bg-(--color-primary-soft) text-(--color-primary) text-sm border border-primary/20 flex items-center gap-2.5 shadow-soft">
                   <CheckCircle2 size={18} />
                   <span>Request sent successfully! Track it under your "My Requests" tab.</span>
+                </div>
+              ) : checkingExisting ? (
+                <div className="h-16 rounded-xl bg-(--color-muted) animate-pulse" />
+              ) : existingRequest ? (
+                <div className="p-4 rounded-xl bg-(--color-primary-soft) text-(--color-primary) text-sm border border-primary/20 flex flex-wrap items-center justify-between gap-3 shadow-soft">
+                  <span className="flex items-center gap-2.5">
+                    <AlertCircle size={18} />
+                    You already have a pending or active request for this service.
+                  </span>
+                  <Link to={`/requests/${existingRequest.id}`} className="font-semibold underline shrink-0">
+                    View Request
+                  </Link>
                 </div>
               ) : (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-xl bg-(--color-primary-soft) border border-primary/20">
@@ -304,9 +351,10 @@ export default function ServiceDetailPage() {
         <RequestServiceModal
           service={service}
           onClose={() => setModalOpen(false)}
-          onSuccess={() => {
+          onSuccess={(created) => {
             setModalOpen(false);
             setRequestSent(true);
+            setExistingRequest(created);
           }}
         />
       )}
