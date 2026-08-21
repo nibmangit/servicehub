@@ -18,8 +18,7 @@ export default function DashboardPage() {
       setLoading(true);
       setError('');
       try {
-        const result = await dashboardApi.getDashboard();
-        console.log(result);
+        const result = await dashboardApi.getDashboard(); 
         if (!cancelled) setData(result);
       } catch (err) {
         if (!cancelled) setError('Could not load your dashboard. Please try refreshing.');

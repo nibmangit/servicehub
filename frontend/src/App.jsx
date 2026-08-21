@@ -12,6 +12,7 @@ import ServicesPage from './features/services/ServicesPage';
 import ServiceDetailPage from './features/services/ServiceDetailPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import MyServicesPage from './features/services/MyServicesPage';
+import RequestDetailPage from './features/requests/RequestDetailPage';
 import RequestsPage from './features/requests/RequestsPage';
 import ProfilePage from './features/profile/ProfilePage';
 import ApplyProviderPage from './features/profile/ApplyProviderPage';
@@ -41,6 +42,7 @@ export default function App() {
         >
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/requests" element={<RequestsPage />} />
+          <Route path="/requests/:id" element={<RequestDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/apply-provider" element={<ApplyProviderPage />} />
           <Route
