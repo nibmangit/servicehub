@@ -10,6 +10,12 @@ export const servicesApi = {
       }
     });
     const response = await api.get('services/', { params });
-    return response.data; // { count, next, previous, results }
+    return response.data;
   },
+
+  getService: async (id) => {
+    const response = await api.get(`services/${id}/`);
+    return response.data;
+  },
+  
 };
