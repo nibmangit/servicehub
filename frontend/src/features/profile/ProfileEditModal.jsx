@@ -38,12 +38,9 @@ export default function ProfileEditModal({ profile, isOpen, onClose, onSave }) {
 
     try {
       const dataToSend = new FormData();
-      
-      // If user is a provider, only send bio updates (and keep old values for everything else)
+       
       if (isProvider) {
-        dataToSend.append('bio', formData.bio || '');
-        // Note: If your Django backend requires full_name on PATCH requests, 
-        // you can include it without changing state, or keep it as-is.
+        dataToSend.append('bio', formData.bio || ''); 
         dataToSend.append('full_name', profile.full_name);
         dataToSend.append('phone', profile.phone || '');
         dataToSend.append('city', profile.city || '');

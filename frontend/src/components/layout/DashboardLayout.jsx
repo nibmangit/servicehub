@@ -47,7 +47,6 @@ function SidebarNav({ isProvider, onNavigate }) {
 export default function DashboardLayout() {
   const { user, updateUser } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  console.log("user: ", user);
 
   const profileIncomplete = !user?.full_name || user.full_name.trim() === '';
 
@@ -61,7 +60,7 @@ export default function DashboardLayout() {
       {/* 3. Row layout for Sidebar + Content that sits beneath the header */}
       <div className="flex-1 flex overflow-hidden max-w-[1600px] w-full mx-auto">
         
-        {/* Desktop sidebar — no logo needed here anymore */}
+        {/* Desktop sidebar */}
         <aside className="hidden md:flex md:w-64 flex-col border-r border-(--color-border) bg-(--color-card)/50">
           <SidebarNav isProvider={user?.is_provider} />
         </aside>
@@ -85,11 +84,9 @@ export default function DashboardLayout() {
           </div>
         )}
 
-        {/* Main Content Area */}
+        {/* Main Content Area - Full width available after sidebar */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-(--color-background)">
-          <div className="max-w-5xl mx-auto">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
 

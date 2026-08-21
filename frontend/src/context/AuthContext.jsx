@@ -24,18 +24,16 @@ export const AuthProvider = ({children}) => {
     }, []);
 
     const login = async (email, password ) =>{
-        try{
-            console.log("Sent Data: ", email, password);
-            const data = await accountApi.login({email, password});
-            console.log("Response Data: ", data);
+        try{ 
+
+            const data = await accountApi.login({email, password}); 
 
             const {access, refresh }= data;
             localStorage.setItem('access_token', access);
             localStorage.setItem('refresh_token', refresh);
 
             const profileData = await accountApi.getProfile();
-            setUser(profileData);
-            console.log("Profiel Data: ", profileData);
+            setUser(profileData); 
             return{ success: true};
         }catch(error){
             return{
