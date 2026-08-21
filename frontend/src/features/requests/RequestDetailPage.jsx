@@ -7,6 +7,8 @@ import StatusBadge from '../../components/common/StatusBadge';
 import { formatDateTime } from '../../lib/format';
 import ProviderActions from '../../components/requests/ProviderActions';
 import CustomerActions from '../../components/requests/CustomerActions';
+import ReviewDisplay from '../../components/reviews/ReviewDisplay';
+import ReviewForm from '../../components/reviews/ReviewForm';
 
 export default function RequestDetailPage() {
   const { id } = useParams();
@@ -87,45 +89,49 @@ export default function RequestDetailPage() {
           </div>
 
           {/* Grid Information Panels */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-(--color-muted) border border-(--color-border)">
-              <div className="p-2.5 rounded-lg bg-(--color-card) text-(--color-primary) shadow-soft">
-                <Calendar size={18} />
-              </div>
-              <div>
-                <p className="text-[11px] font-medium text-(--color-muted-foreground) uppercase tracking-wider">Preferred Date</p>
-                <p className="text-sm font-semibold text-(--color-foreground) mt-0.5">{formatDateTime(request.preferred_date)}</p>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        {/* Preferred Date Card */}
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-(--color-muted) border border-(--color-border) lg:col-span-1">
+            <div className="p-2.5 rounded-lg bg-(--color-card) text-(--color-primary) shadow-soft">
+            <Calendar size={18} />
             </div>
+            <div>
+            <p className="text-[11px] font-medium text-(--color-muted-foreground) uppercase tracking-wider">Preferred Date</p>
+            <p className="text-sm font-semibold text-(--color-foreground) mt-0.5">{formatDateTime(request.preferred_date)}</p>
+            </div>
+        </div>
 
-            {request.agreed_price != null && (
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-(--color-muted) border border-(--color-border)">
-                <div className="p-2.5 rounded-lg bg-(--color-card) text-(--color-accent) shadow-soft">
-                  <DollarSign size={18} />
-                </div>
-                <div>
-                  <p className="text-[11px] font-medium text-(--color-muted-foreground) uppercase tracking-wider">Agreed Price</p>
-                  <p className="text-sm font-semibold text-(--color-foreground) mt-0.5">{Number(request.agreed_price).toLocaleString()} ETB</p>
-                </div>
-              </div>
-            )}
+        {/* Agreed Price Card */}
+        {request.agreed_price != null && (
+            <div className="flex items-center gap-3 p-4 rounded-(--radius-xl) bg-(--color-muted) border border-(--color-border) lg:col-span-1">
+            <div className="p-2.5 rounded-(--radius-lg) bg-(--color-card) text-(--color-accent) shadow-soft">
+                <DollarSign size={18} />
+            </div>
+            <div>
+                <p className="text-[11px] font-medium text-(--color-muted-foreground) uppercase tracking-wider">Agreed Price</p>
+                <p className="text-sm font-semibold text-(--color-foreground) mt-0.5">{Number(request.agreed_price).toLocaleString()} ETB</p>
+            </div>
+            </div>
+        )}
 
-            {request.address && (
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-(--color-muted) border border-(--color-border) sm:col-span-2">
-                <div className="p-2.5 rounded-lg bg-(--color-card) text-(--color-primary) shadow-soft shrink-0">
-                  <MapPin size={18} />
-                </div>
-                <div>
-                  <p className="text-[11px] font-medium text-(--color-muted-foreground) uppercase tracking-wider">Service Location</p>
-                  <p className="text-sm font-semibold text-(--color-foreground) mt-0.5">{request.address}</p>
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Service Location Card */}
+        {request.address && (
+            <div className={`flex items-center gap-3 p-4 rounded-xl bg-(--color-muted) border border-(--color-border) ${request.agreed_price != null ? 'sm:col-span-2 lg:col-span-1' : 'sm:col-span-1 lg:col-span-1'}`}>
+            <div className="p-2.5 rounded-lg bg-(--color-card) text-(--color-primary) shadow-soft shrink-0">
+                <MapPin size={18} />
+            </div>
+            <div>
+                <p className="text-[11px] font-medium text-(--color-muted-foreground) uppercase tracking-wider">Service Location</p>
+                <p className="text-sm font-semibold text-(--color-foreground) mt-0.5">{request.address}</p>
+            </div>
+            </div>
+        )}
+        </div>
 
           {/* Description Section */}
           <div className="space-y-2 pt-2">
-            <h2 className="text-sm font-semibold text-(--color-foreground)">Project Description</h2>
+            <h2 className="text-sm font-semibold text-(--color-foreground)">Request Description</h2>
             <div className="p-4 rounded-xl bg-muted/50 border border-(--color-border) text-sm text-foreground/90 whitespace-pre-line leading-relaxed">
               {request.description || 'No description provided.'}
             </div>
@@ -139,13 +145,25 @@ export default function RequestDetailPage() {
             </div>
           )}
 
+          {request.status === 'COMPLETED' && (
+            <div className="pt-2 border-t border-(--color-border)">
+                {request.review && (
+                <ReviewDisplay review={request.review} />
+                )  }
+            </div>
+            )}
+
           {/* Completion Info Box */}
           {request.status === 'COMPLETED' && isCustomer && (
-            <div className="p-4 rounded-xl bg-(--color-primary-soft) text-(--color-primary) text-sm flex items-center gap-2">
-              <ShieldCheck size={18} />
-              <span>This job is complete — review options will be available soon.</span>
+            <div className="pt-2 border-t border-(--color-border)">
+                {!request.review && (
+                <ReviewForm
+                    requestId={request.id}
+                    onSubmitted={(review) => setRequest((prev) => ({ ...prev, review }))}
+                />
+                )}
             </div>
-          )}
+            )}
 
           {/* Action Trigger Controls */}
           <div className="pt-4 border-t border-(--color-border)">
