@@ -9,6 +9,7 @@ import RoleRoute from './routes/RoleRoute';
 import RootRedirect from './routes/RootRedirect';
 
 import ServicesPage from './features/services/ServicesPage';
+import ServiceDetailPlaceholder from './features/services/ServiceDetailPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import MyServicesPage from './features/services/MyServicesPage';
 import RequestsPage from './features/requests/RequestsPage';
@@ -24,7 +25,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/services" element={<ServicesPage />} />
-          {/* /services/:id lands here once we build Service Detail */}
+          <Route path="/services/:id" element={<ServiceDetailPlaceholder />} />
 
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
