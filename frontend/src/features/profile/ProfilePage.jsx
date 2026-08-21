@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { profileApi } from '../../services/profileApi';
 import { useAuth } from '../../context/AuthContext';
-import { User, Mail, Phone, MapPin, Edit3, CheckCircle2, Shield, Briefcase } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Edit3, CheckCircle2, Shield, Briefcase, UserPlus } from 'lucide-react';
 import ProfileEditModal from './ProfileEditModal';
 
 export default function ProfilePage() {
@@ -55,12 +56,23 @@ export default function ProfilePage() {
           <p className="text-sm text-(--color-muted-foreground) mt-1">View your account details and status.</p>
         </div>
         
-        <button
-          onClick={() => setIsEditModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-(--color-primary) text-(--color-primary-foreground) rounded-(--radius-md) font-medium text-sm hover:opacity-90 transition-all cursor-pointer shadow-soft self-start sm:self-auto"
-        >
-          <Edit3 size={16} /> Edit Profile
-        </button>
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          {!profile?.is_provider && (
+            <Link
+              to="/apply-provider"
+              className="flex items-center gap-2 px-4 py-2 bg-(--color-secondary) text-(--color-foreground) border border-(--color-border) rounded-(--radius-md) font-medium text-sm hover:bg-(--color-muted) transition-all shadow-soft"
+            >
+              <UserPlus size={16} /> Become a Provider
+            </Link>
+          )}
+
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-(--color-primary) text-(--color-primary-foreground) rounded-(--radius-md) font-medium text-sm hover:opacity-90 transition-all cursor-pointer shadow-soft"
+          >
+            <Edit3 size={16} /> Edit Profile
+          </button>
+        </div>
       </div>
 
       {successMessage && (

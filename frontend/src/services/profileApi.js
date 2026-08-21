@@ -11,6 +11,10 @@ export const profileApi = {
   },
   getSkills: async () => {
     const response = await api.get('profiles/skills/');
+    return response.data.results || [];
+  },
+  getRandomFin: async () => { 
+    const response = await api.get('identity/random-test-fin/');
     return response.data;
   },
   verifyFayda: async (finData) => { 
@@ -25,8 +29,12 @@ export const profileApi = {
     const response = await api.post('profiles/apply-provider/', data);
     return response.data;
   },
-  getProviderApplicationStatus: async () => {
-    const response = await api.get('profiles/application-status/');
-    return response.data;
-  }
+  getProviderApplication: async (data) => {
+  const response = await api.get('profiles/apply-provider/', data); // Adjust if your endpoint differs
+  return response.data;
+ },
+  updateProviderApplication: async (data) => {
+  const response = await api.patch('profiles/apply-provider/', data); // Adjust if your endpoint differs
+  return response.data;
+ }
 };
