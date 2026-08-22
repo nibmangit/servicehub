@@ -8,4 +8,6 @@ urlpatterns = [
     path('apply-provider/', ProviderApplicationView.as_view(), name='apply_provider'),
     
     path('skills/', SkillListView.as_view(), name='skill_list'),
+    
+    path('providers/<int:pk>/', PublicProviderProfileView.as_view(), name='public_provider_profile'),
 ]

@@ -6,9 +6,17 @@ class ReviewSerializer(serializers.ModelSerializer):
     client_name = serializers.CharField(source='request.customer.userprofile.full_name', read_only=True)
     client_avatar = serializers.SerializerMethodField(read_only=True)
     
+    service_title = serializers.CharField(source='request.service.title', read_only=True)
+    service_id = serializers.IntegerField(source='request.service.id', read_only=True)
+    provider_id = serializers.IntegerField(source='request.service.provider.id', read_only=True)
+    provider_name = serializers.CharField(source='request.service.provider.user.userprofile.full_name', read_only=True)
+
+    
     class Meta:
         model = Review
-        fields = ['id', 'request','client_name', 'client_avatar', 'rating', 'comment', 'created_at', 'updated_at']
+        fields = ['id', 'request', 'client_name', 'client_avatar', 'service_title',
+                  'service_id', 'provider_id', 'provider_name', 'rating', 'comment',
+                  'created_at', 'updated_at']
         read_only_fields = ["created_at", "updated_at"]
         
     def get_client_avatar(self, obj):

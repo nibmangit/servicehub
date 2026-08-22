@@ -11,7 +11,8 @@ class ServiceFilter(filters.FilterSet):
     
     # Filter by specific pricing types ('hourly', 'fixed')
     price_type = filters.CharFilter(field_name="price_type", lookup_expr='iexact')
+    provider = filters.NumberFilter(field_name="provider__id")
 
     class Meta:
         model = Service
-        fields = ['category', 'price_type', 'min_price', 'max_price']
+        fields = ['category', 'price_type', 'min_price', 'max_price', 'provider'] 

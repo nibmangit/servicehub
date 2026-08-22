@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
-from .models import UserProfile, ProviderApplication, Skill
+from .models import UserProfile, ProviderApplication, Skill, ProviderProfile
 from .services import submit_provider_application
 from cloudinary.utils import cloudinary_url
 
@@ -74,3 +74,33 @@ class UserProfileSerializer(serializers.ModelSerializer):
             data["avatar"] = url
 
         return data
+    
+class PublicProviderProfileSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='user.userprofile.full_name', read_only=True)
+    bio = serializers.CharField(source='user.userprofile.bio', read_only=True)
+    city = serializers.CharField(source='user.userprofile.city', read_only=True)
+    avatar = serializers.SerializerMethodField()
+    skills = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProviderProfile
+        fields = ['id', 'full_name', 'bio', 'city', 'avatar', 'rating',
+                  'total_reviews', 'completed_jobs', 'is_available',
+                  'created_at', 'skills']
+
+    def get_avatar(self, obj):
+        try:
+            profile = obj.user.userprofile
+            if profile.avatar:
+                url, _ = cloudinary_url(profile.avatar.public_id, secure=True)
+                return url
+        except (AttributeError, ValueError):
+            pass
+        return None
+
+    def get_skills(self, obj):
+        # Achievements/skills come from their approved application.
+        application = ProviderApplication.objects.filter(user=obj.user, status='approved').first()
+        if application:
+            return SkillSerializer(application.skills.all(), many=True).data
+        return []

@@ -1,10 +1,9 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.views import APIView 
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import *
 
 class ProviderApplicationView(APIView):
@@ -81,6 +80,12 @@ class MyProfileView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.userprofile
+    
+
+class PublicProviderProfileView(RetrieveAPIView):
+    serializer_class = PublicProviderProfileSerializer
+    permission_classes = [AllowAny]
+    queryset = ProviderProfile.objects.select_related('user', 'user__userprofile')
     
 class SkillListView(ListAPIView):
     permission_classes = [IsAuthenticated]
