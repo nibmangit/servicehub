@@ -7,7 +7,7 @@ import { MessageSquareText, PenSquare, Inbox } from 'lucide-react';
 
 export default function MyReviewsPage() {
   const { user } = useAuth();
-  const [tab, setTab] = useState('written'); // "written" | "received"
+  const [tab, setTab] = useState('received');
   const [writtenReviews, setWrittenReviews] = useState([]);
   const [receivedReviews, setReceivedReviews] = useState([]);
   const [loading, setLoading] = useState(true);
