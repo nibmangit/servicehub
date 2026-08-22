@@ -17,5 +17,39 @@ export const servicesApi = {
     const response = await api.get(`services/${id}/`);
     return response.data;
   },
+
+
+  getMyServices: async () => {
+    const response = await api.get('services/mine/');
+    return response.data;
+  },
+
+  createService: async (data) => {
+    const response = await api.post('services/mine/', data);
+    return response.data;
+  },
+
+  updateService: async (id, data) => {
+    const response = await api.patch(`services/${id}/`, data);
+    return response.data;
+  },
+
+  deleteService: async (id) => {
+    await api.delete(`services/${id}/`);
+  },
+
+
+  uploadServiceImage: async (serviceId, file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await api.post(`services/${serviceId}/images/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  deleteServiceImage: async (imageId) => {
+    await api.delete(`services/images/${imageId}/`);
+  },
   
 };

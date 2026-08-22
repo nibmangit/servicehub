@@ -11,7 +11,7 @@ export default function ProviderDashboard({ data }) {
   return (
     <div className="space-y-6">
       {/* Top Action & Rating Row */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-(--color-card) border border-(--color-border) rounded-(--radius-lg) shadow-soft p-5">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-(--color-card) border border-(--color-border) rounded-lg shadow-soft p-5">
         <div className="flex items-center gap-6 flex-wrap">
           <div className="flex items-center gap-2">
             <Star size={22} className="text-(--color-warning) fill-(--color-warning)" />
@@ -39,7 +39,7 @@ export default function ProviderDashboard({ data }) {
 
       {/* Lists Grid */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <section className="bg-(--color-card) border border-(--color-border) rounded-(--radius-lg) shadow-soft">
+        <section className="bg-(--color-card) border border-(--color-border) rounded-lg shadow-soft">
           <div className="px-5 py-4 border-b border-(--color-border) flex items-center justify-between">
             <h2 className="font-semibold text-(--color-foreground)">Recent Requests</h2>
             <Link to="/requests" className="text-sm text-(--color-primary) hover:underline">View all</Link>
@@ -65,7 +65,7 @@ export default function ProviderDashboard({ data }) {
           )}
         </section>
 
-        <section className="bg-(--color-card) border border-(--color-border) rounded-(--radius-lg) shadow-soft">
+        <section className="bg-(--color-card) border border-(--color-border) rounded-lg shadow-soft">
           <div className="px-5 py-4 border-b border-(--color-border)">
             <h2 className="font-semibold text-(--color-foreground)">Recent Reviews</h2>
           </div>
