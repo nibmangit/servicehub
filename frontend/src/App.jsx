@@ -10,10 +10,11 @@ import RootRedirect from './routes/RootRedirect';
 
 import ServicesPage from './features/services/ServicesPage';
 import ServiceDetailPage from './features/services/ServiceDetailPage';
-import DashboardPage from './features/dashboard/DashboardPage';
 import MyServicesPage from './features/services/MyServicesPage';
-import RequestDetailPage from './features/requests/RequestDetailPage';
+import ServiceFormPage from './features/services/ServiceFormPage';
 import RequestsPage from './features/requests/RequestsPage';
+import RequestDetailPage from './features/requests/RequestDetailPage';
+import DashboardPage from './features/dashboard/DashboardPage';
 import ProfilePage from './features/profile/ProfilePage';
 import ApplyProviderPage from './features/profile/ApplyProviderPage';
 import LandingPage from './features/LandingPaga';
@@ -45,14 +46,21 @@ export default function App() {
           <Route path="/requests/:id" element={<RequestDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/apply-provider" element={<ApplyProviderPage />} />
-          <Route
-            path="/my-services"
-            element={
-              <RoleRoute role="provider">
-                <MyServicesPage />
-              </RoleRoute>
-            }
-          />
+          <Route path="/my-services" element={
+                                              <RoleRoute role="provider">
+                                                <MyServicesPage />
+                                              </RoleRoute>
+                                            } />
+          <Route path="/my-services/new" element={
+                                              <RoleRoute role="provider">
+                                                <ServiceFormPage />
+                                              </RoleRoute>
+                                            } />
+          <Route path="/my-services/:id/edit"  element={
+                                              <RoleRoute role="provider">
+                                                <ServiceFormPage />
+                                              </RoleRoute>
+                                            } />
         </Route>
 
         <Route path="*" element={<RootRedirect />} />

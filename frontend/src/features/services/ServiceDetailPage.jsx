@@ -151,7 +151,7 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-(--color-background) py-8 px-4 sm:px-6 lg:px-8 pb-24">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className=" mx-auto space-y-6">
 
         <Link
           to="/services"
