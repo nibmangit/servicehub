@@ -98,9 +98,7 @@ export default function ServiceDetailPage() {
       try {
         await navigator.share(shareData);
         return;
-      } catch (err) {
-        // Fallback to clipboard
-      }
+      } catch (err) {}
     }
 
     navigator.clipboard.writeText(window.location.href);
@@ -139,7 +137,7 @@ export default function ServiceDetailPage() {
     return (
       <div className="min-h-[calc(100vh-4rem)] bg-(--color-background) py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="p-4 rounded-lg bg-(--color-destructive)/10 text-(--color-destructive) text-sm border border-(--color-destructive)/20 shadow-soft">
+          <div className="p-4 rounded-xl bg-(--color-destructive)/10 text-(--color-destructive) text-sm border border-(--color-destructive)/20 shadow-soft">
             {error || 'Service not found.'}
           </div>
         </div>
@@ -151,196 +149,239 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-(--color-background) py-8 px-4 sm:px-6 lg:px-8 pb-24">
-      <div className=" mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
 
-        <Link
-          to="/services"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-(--color-muted-foreground) hover:text-(--color-primary) transition-colors"
-        >
-          <ArrowLeft size={16} /> Back to Services
-        </Link>
+        {/* Top Back Navigation Link */}
+        <div>
+          <Link
+            to="/services"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-(--color-muted-foreground) hover:text-(--color-primary) transition-colors"
+          >
+            <ArrowLeft size={16} /> Back to Services
+          </Link>
+        </div>
 
-        <div className="bg-(--color-card) border border-(--color-border) rounded-(--radius-2xl) shadow-elevated p-6 sm:p-8 space-y-6">
-
-          {/* TOP SECTION: Title Info on Left, Share/Favorite Buttons on Right */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-6 border-b border-(--color-border)">
-            <div className="space-y-2">
-              {service.category_detail && (
-                <span className="text-xs font-semibold text-(--color-primary) bg-(--color-primary-soft) px-3 py-1 rounded-(--radius-md) tracking-wider uppercase">
-                  {service.category_detail.name}
-                </span>
-              )}
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-(--color-foreground) mt-1">
-                {service.title}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-sm text-(--color-muted-foreground)">
-                <span className="flex items-center gap-1.5 font-medium text-(--color-foreground)">
-                  <MapPin size={16} className="text-(--color-primary)" /> {service.location}
-                </span>
-                {service.duration && (
-                  <span className="flex items-center gap-1.5">
-                    <Clock size={16} className="text-(--color-muted-foreground)" /> {service.duration}
-                  </span>
-                )}
-                {service.review_count > 0 ? (
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Star size={16} className="text-(--color-warning) fill-(--color-warning)" />
-                    <strong className="text-(--color-foreground)">{service.average_rating.toFixed(1)}</strong>
-                    <span>({service.review_count} {service.review_count === 1 ? 'review' : 'reviews'})</span>
-                  </span>
-                ) : (
-                  <span className="text-xs italic">No ratings yet</span>
-                )}
-              </div>
-            </div>
-
-            {/* Share and Favorite Buttons & Price Tag */}
-            <div className="flex items-center sm:flex-col sm:items-end justify-between gap-3 shrink-0">
-              <div className="flex items-center gap-2">
-                {shareFeedback && (
-                  <span className="text-xs font-semibold text-(--color-primary) bg-(--color-primary-soft) px-2.5 py-1 rounded-full animate-fade-in">
-                    Copied!
-                  </span>
-                )}
-                <button
-                  onClick={handleShare}
-                  title="Share service"
-                  className="p-2.5 rounded-lg bg-(--color-muted) border border-(--color-border) text-(--color-foreground) hover:bg-(--color-card) transition-all shadow-soft cursor-pointer"
-                >
-                  <Share2 size={16} />
-                </button>
-                <button
-                  onClick={() => setIsFavorite(!isFavorite)}
-                  title={isFavorite ? 'Remove from favorites' : 'Save to favorites'}
-                  className={`p-2.5 rounded-lg border transition-all shadow-soft cursor-pointer ${
-                    isFavorite ? 'text-rose-500 bg-rose-500/10 border-rose-500/20' : 'bg-(--color-muted) border-(--color-border) text-(--color-foreground) hover:bg-(--color-card)'
-                  }`}
-                >
-                  <Heart size={16} className={isFavorite ? 'fill-rose-500' : ''} />
-                </button>
-              </div>
-
-              <div className="text-right sm:mt-2">
-                <span className="text-[11px] font-semibold text-(--color-muted-foreground) uppercase tracking-wider">Fee: </span>
-                <span className="text-xl font-bold text-(--color-foreground)">{formatPrice(service)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* BELOW HEADER: Image Gallery Section */}
-          <div className="space-y-3">
-            <div className="aspect-video bg-(--color-muted) rounded-xl overflow-hidden border border-(--color-border) shadow-soft">
-              {images.length > 0 ? (
-                <img src={images[activeImage].image} alt={service.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-(--color-muted-foreground) space-y-2">
-                  <MapPin size={24} className="opacity-40" />
-                  <span className="text-sm font-medium">No image preview available</span>
-                </div>
-              )}
-            </div>
-
-            {images.length > 1 && (
-              <div className="flex gap-2.5 overflow-x-auto pb-1">
-                {images.map((img, i) => (
-                  <button
-                    key={img.id}
-                    onClick={() => setActiveImage(i)}
-                    className={`h-16 w-16 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
-                      i === activeImage ? 'border-(--color-primary) ring-2 ring-primary/20' : 'border-transparent opacity-70 hover:opacity-100'
-                    }`}
-                  >
-                    <img src={img.image} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* BELOW IMAGE: Provider Card & Direct Chat Action */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-(--color-muted) border border-(--color-border)">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="h-12 w-12 rounded-full bg-(--color-primary-soft) text-(--color-primary) flex items-center justify-center font-bold text-lg shadow-soft shrink-0">
-                {service.provider_name?.[0]?.toUpperCase() || '?'}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-bold text-(--color-foreground) truncate">{service.provider_name || 'Service Provider'}</p>
-                  <ShieldCheck size={15} className="text-(--color-primary) shrink-0" />
-                </div>
-                <p className="text-xs text-(--color-muted-foreground)">Verified Professional Provider</p>
-              </div>
-            </div>
-
-            {!service.is_owner && (
-              <button
-                onClick={handleChatProvider}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-(--color-card) border border-(--color-border) text-(--color-foreground) hover:bg-(--color-muted) text-sm font-semibold transition-all shadow-soft cursor-pointer"
-              >
-                <MessageSquare size={16} className="text-(--color-primary)" />
-                <span>Chat Provider</span>
-              </button>
-            )}
-          </div>
-
-          {/* Description Section */}
+        {/* TOP TITLE HEADER ROW WITH CATEGORY, TITLE, & ACTION BUTTONS */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-2">
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-(--color-muted-foreground)">About This Service</h2>
-            <div className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed p-4 rounded-xl bg-muted/50 border border-(--color-border)">
-              {service.description || 'No description provided.'}
+            {service.category_detail && (
+              <span className="inline-block text-xs font-semibold text-(--color-primary) bg-(--color-primary-soft) px-3 py-1 rounded-(--radius-md) tracking-wider uppercase">
+                {service.category_detail.name}
+              </span>
+            )}
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-(--color-foreground)">
+              {service.title}
+            </h1>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-(--color-muted-foreground)">
+              <span className="flex items-center gap-1.5 font-medium text-(--color-foreground)">
+                <MapPin size={16} className="text-(--color-primary)" /> {service.location}
+              </span>
+              {service.duration && (
+                <span className="flex items-center gap-1.5">
+                  <Clock size={16} /> {service.duration}
+                </span>
+              )}
+              {service.review_count > 0 ? (
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Star size={16} className="text-(--color-warning) fill-(--color-warning)" />
+                  <strong className="text-(--color-foreground)">{service.average_rating.toFixed(1)}</strong>
+                  <span>({service.review_count} {service.review_count === 1 ? 'review' : 'reviews'})</span>
+                </span>
+              ) : (
+                <span className="text-xs italic">No ratings yet</span>
+              )}
             </div>
           </div>
 
-          {/* Booking Action Box */}
-          {!service.is_owner && (
-            <div className="pt-2">
-              {requestSent ? (
-                <div className="p-4 rounded-xl bg-(--color-primary-soft) text-(--color-primary) text-sm border border-primary/20 flex items-center gap-2.5 shadow-soft">
-                  <CheckCircle2 size={18} />
-                  <span>Request sent successfully! Track it under your "My Requests" tab.</span>
+          {/* Share and Favorite Buttons */}
+          <div className="flex items-center gap-2 self-start md:self-auto shrink-0 pt-1">
+            {shareFeedback && (
+              <span className="text-xs font-semibold text-(--color-primary) bg-(--color-primary-soft) px-2.5 py-1 rounded-full animate-fade-in">
+                Copied!
+              </span>
+            )}
+            <button
+              onClick={handleShare}
+              title="Share service"
+              className="p-2.5 rounded-lg bg-(--color-card) border border-(--color-border) text-(--color-foreground) hover:bg-(--color-muted) transition-all shadow-soft cursor-pointer"
+            >
+              <Share2 size={16} />
+            </button>
+            <button
+              onClick={() => setIsFavorite(!isFavorite)}
+              title={isFavorite ? 'Remove from favorites' : 'Save to favorites'}
+              className={`p-2.5 rounded-lg border transition-all shadow-soft cursor-pointer ${
+                isFavorite ? 'text-rose-500 bg-rose-500/10 border-rose-500/20' : 'bg-(--color-card) border-(--color-border) text-(--color-foreground) hover:bg-(--color-muted)'
+              }`}
+            >
+              <Heart size={16} className={isFavorite ? 'fill-rose-500' : ''} />
+            </button>
+          </div>
+        </div>
+
+        {/* TWO-COLUMN GRID ALIGNED AT THE TOP WITH THE IMAGE GALLERY */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          
+          {/* LEFT 2 COLUMNS: Image Gallery, Provider, About, Reviews */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Image Gallery */}
+            <div className="space-y-3">
+              <div className="aspect-[16/10] bg-(--color-muted) rounded-(--radius-2xl) overflow-hidden border border-(--color-border) shadow-elevated">
+                {images.length > 0 ? (
+                  <img src={images[activeImage].image} alt={service.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-(--color-muted-foreground) space-y-2">
+                    <MapPin size={28} className="opacity-40" />
+                    <span className="text-sm font-medium">No image preview available</span>
+                  </div>
+                )}
+              </div>
+
+              {images.length > 1 && (
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {images.map((img, i) => (
+                    <button
+                      key={img.id}
+                      onClick={() => setActiveImage(i)}
+                      className={`h-20 w-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                        i === activeImage ? 'border-(--color-primary) ring-4 ring-primary/10' : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={img.image} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
                 </div>
-              ) : checkingExisting ? (
-                <div className="h-16 rounded-xl bg-(--color-muted) animate-pulse" />
-              ) : existingRequest ? (
-                <div className="p-4 rounded-xl bg-(--color-primary-soft) text-(--color-primary) text-sm border border-primary/20 flex flex-wrap items-center justify-between gap-3 shadow-soft">
-                  <span className="flex items-center gap-2.5">
-                    <AlertCircle size={18} />
-                    You already have a pending or active request for this service.
+              )}
+            </div>
+
+            {/* Provider Section */}
+            <div className="flex items-center justify-between p-5 rounded-(--radius-2xl) bg-(--color-card) border border-(--color-border) shadow-soft">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="h-14 w-14 rounded-full bg-(--color-primary-soft) text-(--color-primary) flex items-center justify-center font-bold text-xl shadow-soft shrink-0">
+                  {service.provider_name?.[0]?.toUpperCase() || '?'}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-base font-bold text-(--color-foreground) truncate">{service.provider_name || 'Service Provider'}</p>
+                    <ShieldCheck size={16} className="text-(--color-primary) shrink-0" />
+                  </div>
+                  <p className="text-xs text-(--color-muted-foreground)">Verified Professional Provider</p>
+                </div>
+              </div>
+
+              {!service.is_owner && (
+                <button
+                  onClick={handleChatProvider}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-(--color-muted) border border-(--color-border) text-(--color-foreground) hover:bg-(--color-primary-soft) hover:text-(--color-primary) text-sm font-semibold transition-all cursor-pointer shrink-0"
+                >
+                  <MessageSquare size={16} />
+                  <span>Chat</span>
+                </button>
+              )}
+            </div>
+
+            {/* About Service Section */}
+            <div className="space-y-3 bg-(--color-card) border border-(--color-border) p-6 rounded-(--radius-2xl) shadow-soft">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-(--color-muted-foreground)">About This Service</h2>
+              <div className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed">
+                {service.description || 'No description provided.'}
+              </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="space-y-4 bg-(--color-card) border border-(--color-border) p-6 rounded-(--radius-2xl) shadow-soft">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-(--color-foreground)">Customer Reviews</h2>
+                {service.review_count > 0 && (
+                  <span className="text-xs font-semibold text-(--color-muted-foreground)">
+                    {reviews.length} of {service.review_count} shown
                   </span>
-                  <Link to={`/requests/${existingRequest.id}`} className="font-semibold underline shrink-0">
-                    View Request
-                  </Link>
+                )}
+              </div>
+              <ReviewsList reviews={reviews} />
+            </div>
+
+          </div>
+
+          {/* RIGHT 1 COLUMN: Sticky Booking Widget Sidebar (Aligned to top with Image) */}
+          <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
+            <div className="bg-(--color-card) border border-(--color-border) rounded-(--radius-2xl) shadow-elevated p-6 space-y-6">
+              
+              {/* Pricing Display */}
+              <div className="flex items-baseline justify-between pb-6 border-b border-(--color-border)">
+                <div>
+                  <span className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider">Service Fee</span>
+                  <div className="text-3xl font-extrabold text-(--color-foreground) mt-1">
+                    {formatPrice(service)}
+                  </div>
+                </div>
+                {service.duration && (
+                  <span className="text-xs font-medium text-(--color-muted-foreground) bg-(--color-muted) px-2.5 py-1 rounded-full">
+                    {service.duration}
+                  </span>
+                )}
+              </div>
+
+              {/* Booking Actions */}
+              {!service.is_owner ? (
+                <div className="space-y-4">
+                  {requestSent ? (
+                    <div className="p-4 rounded-xl bg-(--color-accent-soft) text-(--color-accent-foreground) text-sm border border-(--color-accent)/30 flex items-center gap-2.5 shadow-soft">
+                      <CheckCircle2 size={18} className="text-(--color-accent) shrink-0" />
+                      <span>Request sent successfully! Track it in your requests dashboard.</span>
+                    </div>
+                  ) : checkingExisting ? (
+                    <div className="h-16 rounded-xl bg-(--color-muted) animate-pulse" />
+                  ) : existingRequest ? (
+                    <div className="p-4 rounded-xl bg-(--color-warning)/10 text-(--color-warning-foreground) text-sm border border-(--color-warning)/30 space-y-3 shadow-soft">
+                      <div className="flex items-center gap-2 font-semibold">
+                        <AlertCircle size={18} className="text-(--color-warning) shrink-0" />
+                        <span>Active Request Exists</span>
+                      </div>
+                      <p className="text-xs text-(--color-muted-foreground)">You have a pending/active booking for this service.</p>
+                      <Link 
+                        to={`/requests/${existingRequest.id}`} 
+                        className="block text-center w-full py-2 rounded-lg bg-(--color-card) font-semibold text-xs border border-(--color-border) hover:bg-(--color-muted) transition-colors"
+                      >
+                        View Request Details
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <button
+                        onClick={handleRequestClick}
+                        className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-(--color-primary) text-(--color-primary-foreground) text-sm font-bold shadow-elevated hover:opacity-95 transition-all cursor-pointer"
+                      >
+                        <Calendar size={18} />
+                        Request This Service
+                      </button>
+                      <p className="text-[11px] text-center text-(--color-muted-foreground)">
+                        You won't be charged until the provider accepts your request.
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-xl bg-(--color-primary-soft) border border-primary/20">
-                  <div>
-                    <h3 className="text-sm font-semibold text-(--color-primary)">Ready to book this service?</h3>
-                    <p className="text-xs text-(--color-muted-foreground) mt-0.5">Select a preferred date and send a custom request.</p>
-                  </div>
-                  <button
-                    onClick={handleRequestClick}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-(--color-primary) text-(--color-primary-foreground) text-sm font-semibold shadow-soft hover:opacity-90 transition-all cursor-pointer shrink-0"
-                  >
-                    <Calendar size={16} />
-                    Request This Service
-                  </button>
+                <div className="p-4 rounded-xl bg-(--color-muted) text-center text-xs text-(--color-muted-foreground) font-medium">
+                  This is your own listed service.
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Reviews List Section */}
-          <div className="space-y-4 pt-6 border-t border-(--color-border)">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-(--color-foreground)">Customer Reviews</h2>
-              {service.review_count > 0 && (
-                <span className="text-xs font-semibold text-(--color-muted-foreground)">
-                  Showing {reviews.length} of {service.review_count} reviews
-                </span>
-              )}
+              {/* Quick Trust Checklist */}
+              <div className="pt-4 border-t border-(--color-border) space-y-2.5 text-xs text-(--color-muted-foreground)">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={15} className="text-(--color-primary)" />
+                  <span>Secure Escrow & OTP Verification</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={15} className="text-(--color-accent)" />
+                  <span>Verified Local Professionals</span>
+                </div>
+              </div>
+
             </div>
-            <ReviewsList reviews={reviews} />
           </div>
 
         </div>
