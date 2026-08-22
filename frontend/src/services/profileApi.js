@@ -36,5 +36,10 @@ export const profileApi = {
   updateProviderApplication: async (data) => {
   const response = await api.patch('profiles/apply-provider/', data); // Adjust if your endpoint differs
   return response.data;
- }
+ },
+
+ getPublicProviderProfile: async (id) => {
+  const response = await api.get(`profiles/providers/${id}/`);
+  return response.data;
+},
 };

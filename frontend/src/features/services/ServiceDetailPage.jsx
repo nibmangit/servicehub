@@ -40,7 +40,7 @@ export default function ServiceDetailPage() {
       try {
         const [serviceData, reviewsData] = await Promise.all([
           servicesApi.getService(id),
-          reviewsApi.getServiceReviews(id),
+          reviewsApi.getReviews({service: id}),
         ]);
 
         if (!cancelled) {
@@ -258,7 +258,7 @@ export default function ServiceDetailPage() {
 
             {/* Provider Section */}
             <div className="flex items-center justify-between p-5 rounded-(--radius-2xl) bg-(--color-card) border border-(--color-border) shadow-soft">
-              <div className="flex items-center gap-4 min-w-0">
+              <Link to={`/providers/${service.provider}`} className="flex items-center gap-3.5 min-w-0 hover:opacity-80 transition-opacity">
                 <div className="h-14 w-14 rounded-full bg-(--color-primary-soft) text-(--color-primary) flex items-center justify-center font-bold text-xl shadow-soft shrink-0">
                   {service.provider_name?.[0]?.toUpperCase() || '?'}
                 </div>
@@ -269,7 +269,7 @@ export default function ServiceDetailPage() {
                   </div>
                   <p className="text-xs text-(--color-muted-foreground)">Verified Professional Provider</p>
                 </div>
-              </div>
+              </Link>
 
               {!service.is_owner && (
                 <button

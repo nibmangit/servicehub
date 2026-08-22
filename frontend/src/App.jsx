@@ -18,6 +18,9 @@ import DashboardPage from './features/dashboard/DashboardPage';
 import ProfilePage from './features/profile/ProfilePage';
 import ApplyProviderPage from './features/profile/ApplyProviderPage';
 import LandingPage from './features/LandingPaga';
+import ProviderPublicProfilePage from './features/profile/ProviderPublicProfilePage';
+import MyReviewsPage from './features/reviews/MyReviewsPage';
+import ReviewDetailPage from './features/reviews/ReviewDetailPage';
 
 export default function App() {
   return (
@@ -28,6 +31,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/services/:id" element={<ServiceDetailPage />} />
+          <Route path="/providers/:id" element={<ProviderPublicProfilePage />} />
 
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -44,6 +48,8 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/requests" element={<RequestsPage />} />
           <Route path="/requests/:id" element={<RequestDetailPage />} />
+          <Route path="/reviews" element={<MyReviewsPage />} />
+          <Route path="/reviews/:id" element={<ReviewDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/apply-provider" element={<ApplyProviderPage />} />
           <Route path="/my-services" element={

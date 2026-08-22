@@ -10,7 +10,7 @@ export default function RequestsPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [tab, setTab] = useState('bookings'); // "bookings" | "incoming"
+  const [tab, setTab] = useState('incoming');
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +67,7 @@ export default function RequestsPage() {
                 onClick={() => setTab('bookings')}
                 className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-(--radius-md) transition-all cursor-pointer ${
                   tab === 'bookings'
-                    ? 'bg-(--color-card) text-(--color-primary) shadow-soft'
+                    ? 'bg-(--color-primary) text-(--color-primary-foreground) shadow-soft'
                     : 'text-(--color-muted-foreground) hover:text-(--color-foreground)'
                 }`}
               >
@@ -79,7 +79,7 @@ export default function RequestsPage() {
                 onClick={() => setTab('incoming')}
                 className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-(--radius-md) transition-all cursor-pointer ${
                   tab === 'incoming'
-                    ? 'bg-(--color-card) text-(--color-primary) shadow-soft'
+                    ? 'bg-(--color-primary) text-(--color-primary-foreground) shadow-soft'
                     : 'text-(--color-muted-foreground) hover:text-(--color-foreground)'
                 }`}
               >

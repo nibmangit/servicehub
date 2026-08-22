@@ -1,8 +1,13 @@
 import api from "./api";
 
-export const reviewsApi = { 
-  getServiceReviews: async (serviceId) => {
-    const response = await api.get('reviews/', { params: { service: serviceId } });
+export const reviewsApi = {  
+  getReviews: async (filters = {}) => {
+    const response = await api.get('reviews/', { params: filters });
+    return response.data;
+  },
+
+  getReview: async (id) => {
+    const response = await api.get(`reviews/${id}/`);
     return response.data;
   },
 

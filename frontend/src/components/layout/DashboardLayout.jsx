@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Search, ClipboardList, Wrench, UserPlus, User, X } from 'lucide-react';
+import { LayoutDashboard, Search, ClipboardList,Star, Wrench, UserPlus, User, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import CompleteProfileModal from '../../features/profile/CompleteProfileModal';
 import Header from './Header';
@@ -24,6 +24,9 @@ function SidebarNav({ isProvider, onNavigate }) {
       </NavLink>
       <NavLink to="/requests" className={sidebarLinkClass} onClick={onNavigate}>
         <ClipboardList size={18} /> My Requests
+      </NavLink>
+      <NavLink to="/reviews" className={sidebarLinkClass} onClick={onNavigate}>
+        <Star size={17} /> My Reviews
       </NavLink>
 
       <div className="mt-8 mb-3 px-1 text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider pt-6 border-t border-(--color-border)">Account</div>

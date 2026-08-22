@@ -77,9 +77,13 @@ export default function RequestDetailPage() {
               <div className="flex items-center gap-2 text-sm text-(--color-muted-foreground) pt-1">
                 <User size={15} className="text-(--color-primary)" />
                 <span>
-                  {isCustomer 
-                    ? `Provider: ${request.provider_name || request.provider_email}` 
-                    : `Customer: ${request.customer_email}`}
+                  {isCustomer ?(
+                      <>
+                        Provider: <Link to={`/providers/${request.provider}`} className="text-(--color-primary) hover:underline">{request.provider_name || request.provider_email}</Link>
+                      </>
+                    ): (
+                      `Customer: ${request.customer_email}`
+                    )}
                 </span>
               </div>
             </div>
