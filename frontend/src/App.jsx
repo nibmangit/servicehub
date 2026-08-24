@@ -21,6 +21,7 @@ import LandingPage from './features/LandingPaga';
 import ProviderPublicProfilePage from './features/profile/ProviderPublicProfilePage';
 import MyReviewsPage from './features/reviews/MyReviewsPage';
 import ReviewDetailPage from './features/reviews/ReviewDetailPage';
+import NotificationsPage from './features/notifications/NotificationsPage';
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/requests" element={<RequestsPage />} />
           <Route path="/requests/:id" element={<RequestDetailPage />} />
           <Route path="/reviews" element={<MyReviewsPage />} />

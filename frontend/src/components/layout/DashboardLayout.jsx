@@ -45,6 +45,9 @@ function SidebarNav({ isProvider, onNavigate, logout }) {
             <NavLink to="/chat" className={sidebarLinkClass} onClick={onNavigate}>
               <MessageSquare size={18} /> Messages
             </NavLink>
+            <NavLink to="/notifications" className={sidebarLinkClass} onClick={onNavigate}>
+              <MessageSquare size={18} /> Notifications
+            </NavLink>
             <NavLink to="/reviews" className={sidebarLinkClass} onClick={onNavigate}>
               <Star size={17} /> My Reviews
             </NavLink>
