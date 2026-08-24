@@ -328,7 +328,7 @@ export default function ServiceDetailPage() {
               {!service.is_owner ? (
                 <div className="space-y-4">
                   {requestSent ? (
-                    <div className="p-4 rounded-xl bg-(--color-accent-soft) text-(--color-accent-foreground) text-sm border border-(--color-accent)/30 flex items-center gap-2.5 shadow-soft">
+                    <div className="p-4 rounded-(--radius-md) bg-(--color-success)/10 text-(--color-success) text-sm border border-(--color-success)/20 flex items-center gap-2.5 shadow-soft">
                       <CheckCircle2 size={18} className="text-(--color-accent) shrink-0" />
                       <span>Request sent successfully! Track it in your requests dashboard.</span>
                     </div>

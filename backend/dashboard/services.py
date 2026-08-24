@@ -71,6 +71,7 @@ class DashboardService:
                 reviews.select_related("request", "request__customer")
                 .order_by("-created_at")[:5]
                 .values(
+                    "id",
                     "rating",
                     "comment",
                     "request__customer__email",
