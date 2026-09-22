@@ -11,7 +11,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -20,34 +20,40 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response, // If the request succeeds, just return it
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      const refreshToken = localStorage.getItem('refresh_token');
 
-      if (refreshToken) {
-        try {
-          const response = await axios.post(`${BASE_URL}/auth/refresh/`, {
-            refresh: refreshToken,
-          });
-          const { access, refresh } = response.data;
-          localStorage.setItem('access_token', access); 
-          if (refresh) {
-            localStorage.setItem('refresh_token', refresh);
-          }
-          originalRequest.headers.Authorization = `Bearer ${access}`;
-          return api(originalRequest);
-        } catch (refreshError) {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          window.location.href = '/login';
-          return Promise.reject(refreshError);
-        }
+    // If error is 401 and we haven't tried to refresh yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // Mark that we are trying a refresh
+
+      try {
+        const refreshToken = localStorage.getItem("refresh_token");
+         
+        const response = await axios.post(`${BASE_URL}auth/refresh/`, {
+          refresh: refreshToken,
+        });
+
+        const newAccessToken = response.data.access;
+ 
+        localStorage.setItem("access_token", newAccessToken);
+
+        // Update the header of the original failed request
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        // Retry the original request with the new token
+        return api(originalRequest);
+      } catch (refreshError) { 
+        console.error("Refresh token expired. Logging out.");
+        localStorage.clear();
+        window.location.href = "/";
+        return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
   }
 );

@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Inbox } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import NotificationHeader from '../../components/notifications/NotificationHeader';
 import NotificationItem from '../../components/notifications/NotificationItem';
 
 export default function NotificationsPage() {
-  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { notifications, refresh, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
-  console.log(notifications)
+  useEffect(() => {
+    refresh();
+  }, []);
   
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'unread'
 

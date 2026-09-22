@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import PublicLayout from './components/layout/PublicLayout';
@@ -25,54 +25,61 @@ import NotificationsPage from './features/notifications/NotificationsPage';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes> 
-        {/* Public browsing — same layout whether logged in or not */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/services/:id" element={<ServiceDetailPage />} />
-          <Route path="/providers/:id" element={<ProviderPublicProfilePage />} />
+    <Routes>
+      {/* Public browsing — same layout whether logged in or not */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services/:id" element={<ServiceDetailPage />} />
+        <Route path="/providers/:id" element={<ProviderPublicProfilePage />} />
 
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-        </Route>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
 
-        {/* Authenticated app, sidebar layout */}
+      {/* Authenticated app, sidebar layout */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/requests" element={<RequestsPage />} />
+        <Route path="/requests/:id" element={<RequestDetailPage />} />
+        <Route path="/reviews" element={<MyReviewsPage />} />
+        <Route path="/reviews/:id" element={<ReviewDetailPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/apply-provider" element={<ApplyProviderPage />} />
         <Route
+          path="/my-services"
           element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
+            <RoleRoute role="provider">
+              <MyServicesPage />
+            </RoleRoute>
           }
-        >
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/requests" element={<RequestsPage />} />
-          <Route path="/requests/:id" element={<RequestDetailPage />} />
-          <Route path="/reviews" element={<MyReviewsPage />} />
-          <Route path="/reviews/:id" element={<ReviewDetailPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/apply-provider" element={<ApplyProviderPage />} />
-          <Route path="/my-services" element={
-                                              <RoleRoute role="provider">
-                                                <MyServicesPage />
-                                              </RoleRoute>
-                                            } />
-          <Route path="/my-services/new" element={
-                                              <RoleRoute role="provider">
-                                                <ServiceFormPage />
-                                              </RoleRoute>
-                                            } />
-          <Route path="/my-services/:id/edit"  element={
-                                              <RoleRoute role="provider">
-                                                <ServiceFormPage />
-                                              </RoleRoute>
-                                            } />
-        </Route>
+        />
+        <Route
+          path="/my-services/new"
+          element={
+            <RoleRoute role="provider">
+              <ServiceFormPage />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/my-services/:id/edit"
+          element={
+            <RoleRoute role="provider">
+              <ServiceFormPage />
+            </RoleRoute>
+          }
+        />
+      </Route>
 
-        <Route path="*" element={<RootRedirect />} />
-      </Routes>
-    </BrowserRouter>
+      <Route path="*" element={<RootRedirect />} />
+    </Routes>
   );
 }

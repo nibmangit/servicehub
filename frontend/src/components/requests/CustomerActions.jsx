@@ -13,7 +13,7 @@ export default function CustomerActions({ request, onUpdated }) {
     setBusy(true);
     try {
       const updated = await requestsApi.updateStatus(request.id, { status: 'CANCELLED' }); 
-      onUpdated({ updated });
+      onUpdated(updated);
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {

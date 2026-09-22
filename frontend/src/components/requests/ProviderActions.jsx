@@ -15,7 +15,7 @@ export default function ProviderActions({ request, onUpdated }) {
     setBusy(true);
     try {
       const updated = await requestsApi.updateStatus(request.id, payload); 
-      onUpdated({ updated });
+      onUpdated(updated);
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
