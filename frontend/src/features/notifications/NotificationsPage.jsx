@@ -3,14 +3,18 @@ import { Inbox } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import NotificationHeader from '../../components/notifications/NotificationHeader';
 import NotificationItem from '../../components/notifications/NotificationItem';
+import LoadMoreButton from '../../components/common/LoadMoreButton';
 
 export default function NotificationsPage() {
-  const { notifications, refresh, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const {
+    notifications, refresh, count, hasMore, loading, loadingMore, loadMore,
+    unreadCount, markAsRead, markAllAsRead, deleteNotification,
+  } = useNotifications();
 
   useEffect(() => {
     refresh();
   }, []);
-  
+
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'unread'
 
   const filteredNotifications = notifications.filter((n) => {
@@ -18,18 +22,20 @@ export default function NotificationsPage() {
     return true;
   });
 
+  // "Load more" only makes sense on "all" — filtering a partially-loaded
+  // list client-side on "unread" would make the button misleading there.
+  const showLoadMore = activeTab === 'all' && hasMore;
+
   return (
     <div className="flex flex-col gap-6 mx-auto w-full pb-16 animate-fade-in">
-      {/* Reusable Header with Tabs */}
       <NotificationHeader
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         unreadCount={unreadCount}
-        totalCount={notifications.length}
+        totalCount={count}
         onMarkAllRead={markAllAsRead}
       />
 
-      {/* Notifications Feed */}
       <div className="flex flex-col gap-3">
         {loading && notifications.length === 0 ? (
           <div className="p-12 text-center text-sm text-(--color-muted-foreground)">Loading notifications...</div>
@@ -52,6 +58,16 @@ export default function NotificationsPage() {
           ))
         )}
       </div>
+
+      {showLoadMore && (
+        <LoadMoreButton
+          hasMore={hasMore}
+          loadingMore={loadingMore}
+          onClick={loadMore}
+          loadedCount={notifications.length}
+          totalCount={count}
+        />
+      )}
     </div>
   );
 }

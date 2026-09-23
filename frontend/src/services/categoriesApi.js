@@ -3,6 +3,6 @@ import api from './api';
 export const categoriesApi = { 
   getCategories: async () => {
     const response = await api.get('categories/');
-    return response.data.results;
+    return response.data.results || response.data || [];
   },
 };

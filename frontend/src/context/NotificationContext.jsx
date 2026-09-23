@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { notificationApi } from '../services/notificationApi';
 import { useAuth } from './AuthContext';
 import { useChat } from './ChatContext';
+import { usePaginatedResource } from '../lib/usePaginatedResource';
 import { buildWsUrl } from '../lib/ws';
 
 const NotificationContext = createContext(null);
@@ -20,12 +21,23 @@ const NOTIFICATION_ICONS = {
 };
 
 export function NotificationProvider({ children }) {
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { refresh: refreshChat } = useChat();
+
+  const {
+    items: notifications,
+    count,
+    hasMore,
+    loading,
+    loadingMore,
+    loadMore,
+    goToPage,
+    setItems: setNotifications,
+    setCount,
+  } = usePaginatedResource(notificationApi.getNotifications, user ? {} : null);
+
+  const [unreadCount, setUnreadCount] = useState(0);
   const socketRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
 
@@ -43,21 +55,9 @@ export function NotificationProvider({ children }) {
     const token = localStorage.getItem('access_token');
     if (!token || !user) return;
 
-    const fetchNotifications = async () => {
-      try {
-        setLoading(true);
-        const data = await notificationApi.getNotifications();
-        setNotifications(data.results || data);
-        const countData = await notificationApi.getUnreadCount();
-        setUnreadCount(countData.unread_count);
-      } catch (error) {
-        console.error('Failed to fetch notifications', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNotifications();
+    notificationApi.getUnreadCount()
+      .then((data) => setUnreadCount(data.unread_count))
+      .catch((error) => console.error('Failed to fetch unread count', error));
 
     let cancelled = false;
 
@@ -71,7 +71,10 @@ export function NotificationProvider({ children }) {
         const parsed = JSON.parse(event.data);
         const newNotif = parsed.data;
 
+        // Prepend live — doesn't disturb hasMore/page, since this is a new
+        // item, not another page of older ones.
         setNotifications((prev) => [newNotif, ...prev]);
+        setCount((prev) => prev + 1);
         setUnreadCount((prev) => prev + 1);
 
         if (newNotif.notification_type === 'NEW_MESSAGE') {
@@ -113,14 +116,16 @@ export function NotificationProvider({ children }) {
     };
   }, [user]);
 
+  // goToPage(1) re-fetches the first page fresh — equivalent to the old
+  // bespoke refresh(), reusing the hook's own fetch logic instead of
+  // duplicating it.
   const refresh = async () => {
+    goToPage(1);
     try {
-      const data = await notificationApi.getNotifications();
-      setNotifications(data.results || data);
       const countData = await notificationApi.getUnreadCount();
       setUnreadCount(countData.unread_count);
     } catch (error) {
-      console.error('Failed to refresh notifications', error);
+      console.error('Failed to refresh unread count', error);
     }
   };
 
@@ -139,6 +144,7 @@ export function NotificationProvider({ children }) {
       const notif = notifications.find((n) => n.id === id);
       await notificationApi.deleteNotification(id);
       setNotifications((prev) => prev.filter((n) => n.id !== id));
+      setCount((prev) => Math.max(0, prev - 1));
       if (notif && !notif.is_read) {
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
@@ -149,7 +155,10 @@ export function NotificationProvider({ children }) {
 
   return (
     <NotificationContext.Provider
-      value={{ notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification, refresh }}
+      value={{
+        notifications, count, hasMore, loading, loadingMore,
+        unreadCount, markAsRead, markAllAsRead, deleteNotification, refresh, loadMore,
+      }}
     >
       {children}
     </NotificationContext.Provider>

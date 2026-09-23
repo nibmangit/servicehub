@@ -14,6 +14,19 @@ class RequestListCreateView(ListCreateAPIView):
     
     def get_queryset(self):
         user = self.request.user
+        
+        role = self.request.query_params.get('role')  # 'customer' | 'provider'
+
+        if role == 'customer':
+            return ServiceRequest.objects.filter(customer=user).select_related(
+                "customer", "provider__user", "service",
+            )
+
+        if role == 'provider' and hasattr(user, "providerprofile"):
+            return ServiceRequest.objects.filter(provider=user.providerprofile).select_related(
+                "customer", "provider__user", "service",
+            )
+            
         if hasattr(user, "providerprofile"):
             return ServiceRequest.objects.filter(
             Q(customer=user) |

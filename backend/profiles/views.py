@@ -90,4 +90,5 @@ class PublicProviderProfileView(RetrieveAPIView):
 class SkillListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = SkillSerializer
+    pagination_class = None  # Disable pagination
     queryset = Skill.objects.filter(is_active=True)

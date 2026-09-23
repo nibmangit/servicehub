@@ -4,34 +4,28 @@ import { Star, Briefcase, CheckCircle2, MapPin, ArrowLeft, ShieldCheck, Award } 
 import { profileApi } from '../../services/profileApi';
 import { servicesApi } from '../../services/servicesApi';
 import { reviewsApi } from '../../services/reviewsApi';
+import { usePaginatedResource } from '../../lib/usePaginatedResource';
 import ServiceCard from '../../components/services/ServiceCard';
 import ReviewsList from '../../components/reviews/ReviewsList';
+import LoadMoreButton from '../../components/common/LoadMoreButton';
 import EmptyState from '../../components/common/EmptyState';
 
 export default function ProviderPublicProfilePage() {
   const { id } = useParams();
   const [provider, setProvider] = useState(null);
-  const [services, setServices] = useState([]);
-  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const services = usePaginatedResource(servicesApi.getServices, { provider: id });
+  const reviews = usePaginatedResource(reviewsApi.getReviews, { provider: id });
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError('');
 
-    Promise.all([
-      profileApi.getPublicProviderProfile(id),
-      servicesApi.getServices({ provider: id }),
-      reviewsApi.getReviews({ provider: id }),
-    ])
-      .then(([providerData, servicesData, reviewsData]) => {
-        if (cancelled) return;
-        setProvider(providerData);
-        setServices(servicesData.results || []);
-        setReviews(reviewsData.results || []);
-      })
+    profileApi.getPublicProviderProfile(id)
+      .then((data) => { if (!cancelled) setProvider(data); })
       .catch(() => { if (!cancelled) setError('Could not load this provider profile.'); })
       .finally(() => { if (!cancelled) setLoading(false); });
 
@@ -59,26 +53,21 @@ export default function ProviderPublicProfilePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 pb-24">
-      
-      {/* Back Navigation */}
-      <Link 
-        to={-1} 
+
+      <Link
+        to={-1}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-(--color-muted-foreground) hover:text-(--color-primary) transition-colors"
       >
         <ArrowLeft size={16} /> Back
       </Link>
 
-      {/* SIDE-BY-SIDE GRID LAYOUT (Left: Sticky Profile Card, Right: Services & Reviews) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* LEFT COLUMN: Sticky Provider Profile Card */}
+
         <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
           <div className="bg-(--color-card) border border-(--color-border) rounded-(--radius-2xl) shadow-elevated p-6 sm:p-8 space-y-6 relative overflow-hidden">
-            
-            {/* Background Glow */}
+
             <div className="absolute top-0 right-0 w-64 h-64 bg-(--color-primary)/5 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
 
-            {/* Avatar & Availability */}
             <div className="flex flex-col items-center text-center space-y-4 relative z-10">
               <div className="relative">
                 <div className="h-28 w-28 rounded-3xl bg-(--color-primary-soft) text-(--color-primary) flex items-center justify-center text-4xl font-extrabold shadow-soft overflow-hidden border-2 border-(--color-border)">
@@ -110,7 +99,6 @@ export default function ProviderPublicProfilePage() {
               </div>
             </div>
 
-            {/* Metrics Box */}
             <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-(--color-muted)/50 border border-(--color-border) text-center relative z-10">
               <div className="space-y-0.5 pr-3 border-r border-(--color-border)">
                 <div className="flex items-center justify-center gap-1">
@@ -128,7 +116,6 @@ export default function ProviderPublicProfilePage() {
               </div>
             </div>
 
-            {/* Bio */}
             {provider.bio && (
               <div className="space-y-2 relative z-10 pt-2 border-t border-(--color-border)">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-(--color-muted-foreground)">About</h3>
@@ -138,7 +125,6 @@ export default function ProviderPublicProfilePage() {
               </div>
             )}
 
-            {/* Skills */}
             {provider.skills?.length > 0 && (
               <div className="space-y-2.5 relative z-10 pt-2 border-t border-(--color-border)">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-(--color-muted-foreground)">Expertise</h3>
@@ -155,36 +141,53 @@ export default function ProviderPublicProfilePage() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Services & Reviews Sections */}
         <div className="lg:col-span-8 space-y-10">
-          
-          {/* Active Services Grid */}
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-(--color-foreground) tracking-tight">Active Services</h2>
-              <span className="text-xs text-(--color-muted-foreground) font-semibold uppercase tracking-wider">{services.length} Listed</span>
+              <span className="text-xs text-(--color-muted-foreground) font-semibold uppercase tracking-wider">{services.count} Listed</span>
             </div>
 
-            {services.length === 0 ? (
+            {services.loading ? (
+              <div className="py-12 flex justify-center">
+                <div className="h-6 w-6 rounded-full border-2 border-(--color-border) border-t-(--color-primary) animate-spin" />
+              </div>
+            ) : services.items.length === 0 ? (
               <div className="bg-(--color-card) border border-(--color-border) rounded-(--radius-2xl) p-10 shadow-soft">
                 <EmptyState message="This provider doesn't have any active services right now." />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {services.map((service) => <ServiceCard key={service.id} service={service} />)}
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {services.items.map((service) => <ServiceCard key={service.id} service={service} />)}
+                </div>
+                <LoadMoreButton
+                  hasMore={services.hasMore}
+                  loadingMore={services.loadingMore}
+                  onClick={services.loadMore}
+                  loadedCount={services.items.length}
+                  totalCount={services.count}
+                />
+              </>
             )}
           </div>
 
-          {/* Client Reviews Section */}
           <div className="space-y-4 pt-6 border-t border-(--color-border)">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-(--color-foreground) tracking-tight">Client Reviews</h2>
-              <span className="text-xs text-(--color-muted-foreground) font-semibold uppercase tracking-wider">{reviews.length} Total</span>
+              <span className="text-xs text-(--color-muted-foreground) font-semibold uppercase tracking-wider">{reviews.count} Total</span>
             </div>
 
             <div className="bg-(--color-card) border border-(--color-border) rounded-(--radius-2xl) p-6 sm:p-8 shadow-soft">
-              <ReviewsList reviews={reviews} />
+              <ReviewsList reviews={reviews.items} />
+              <LoadMoreButton
+                hasMore={reviews.hasMore}
+                loadingMore={reviews.loadingMore}
+                onClick={reviews.loadMore}
+                loadedCount={reviews.items.length}
+                totalCount={reviews.count}
+              />
             </div>
           </div>
 

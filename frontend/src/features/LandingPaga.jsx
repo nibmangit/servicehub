@@ -15,49 +15,21 @@ import {
   Briefcase,
   Users,
   CheckCircle,
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react';
+import { categoriesApi } from '../services/categoriesApi'; // Adjust path if needed
+import { servicesApi } from '../services/servicesApi';     // Adjust path if needed
+import ServiceCard from '../components/services/ServiceCard';
 
-const categories = [
-  { name: 'Tech & Development', icon: Code, count: '14+ Services', path: '/services?category=tech' },
-  { name: 'Home Maintenance', icon: Home, count: '28+ Services', path: '/services?category=home' },
-  { name: 'Design & Creative', icon: Palette, count: '19+ Services', path: '/services?category=design' },
-  { name: 'Tutoring & Academic', icon: BookOpen, count: '12+ Services', path: '/services?category=tutoring' },
-  { name: 'Professional Consulting', icon: Briefcase, count: '9+ Services', path: '/services?category=consulting' },
-];
-
-const featuredServices = [
-  {
-    id: 1,
-    title: 'Full-Stack Web Application Development',
-    category: 'Tech & Development',
-    price: '2,500 ETB',
-    rating: 4.9,
-    reviews: 24,
-    provider: 'Abebe Kebede',
-    badge: 'Top Rated',
-  },
-  {
-    id: 2,
-    title: 'Professional Home Electrical & Wiring Repair',
-    category: 'Home Maintenance',
-    price: '800 ETB',
-    rating: 4.8,
-    reviews: 19,
-    provider: 'Dawit Tadesse',
-    badge: 'Verified',
-  },
-  {
-    id: 3,
-    title: 'UI/UX Brand Identity & Logo Design',
-    category: 'Design & Creative',
-    price: '1,500 ETB',
-    rating: 5.0,
-    reviews: 31,
-    provider: 'Mekdes Alemayehu',
-    badge: 'Popular',
-  },
-];
+// Fallback icon map for dynamic categories loaded from backend
+const CATEGORY_ICONS = {
+  'Tech & Development': Code,
+  'Home Maintenance': Home,
+  'Design & Creative': Palette,
+  'Tutoring & Academic': BookOpen,
+  'Professional Consulting': Briefcase,
+};
 
 // Custom counting animation hook
 function useCountUp(end, duration = 2000) {
@@ -83,6 +55,33 @@ export default function LandingPage() {
   const expertCount = useCountUp(50, 1500);
   const jobsCount = useCountUp(1200, 2000);
   const requestsCount = useCountUp(3400, 2200);
+
+  const [categories, setCategories] = useState([]);
+  const [featuredServices, setFeaturedServices] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    const fetchLandingData = async () => {
+      try {
+        setLoadingData(true);
+        // Fetch categories and featured services concurrently
+        const [catData, servData] = await Promise.all([
+          categoriesApi.getCategories(),
+          servicesApi.getServices({ ordering: '-rating', page_size: 3 }) // Fetch top-rated services
+        ]);
+
+        setCategories(catData.slice(0, 5)); // Limit to top 5 categories for grid
+        const results = servData.results || servData || [];
+        setFeaturedServices(results.slice(0, 3)); // Limit to top 3 featured services
+      } catch (error) {
+        console.error('Failed to load landing page data', error);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    fetchLandingData();
+  }, []);
 
   return (
     <div className="flex flex-col gap-20 pb-16 animate-fade-in w-full">
@@ -154,28 +153,34 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {categories.map((cat, idx) => {
-            const Icon = cat.icon;
-            return (
-              <Link
-                key={idx}
-                to={cat.path}
-                className="group p-5 rounded-(--radius-lg) bg-(--color-card) border border-(--color-border) hover:border-(--color-primary)/50 transition-all duration-200 shadow-soft hover:shadow-elevated flex flex-col gap-3"
-              >
-                <div className="h-10 w-10 rounded-(--radius-md) bg-(--color-primary-soft) text-(--color-primary) flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Icon size={20} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-(--color-foreground) group-hover:text-(--color-primary) transition-colors">
-                    {cat.name}
-                  </h3>
-                  <p className="text-xs text-(--color-muted-foreground) mt-0.5">{cat.count}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        {loadingData && categories.length === 0 ? (
+          <div className="flex justify-center p-8 text-(--color-muted-foreground)">
+            <Loader2 className="animate-spin" size={24} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {categories.map((cat, idx) => {
+              const Icon = CATEGORY_ICONS[cat.name] || Wrench;
+              return (
+                <Link
+                  key={cat.id || idx}
+                  to={`/services?category=${cat.id}`}
+                  className="group p-5 rounded-(--radius-lg) bg-(--color-card) border border-(--color-border) hover:border-(--color-primary)/50 transition-all duration-200 shadow-soft hover:shadow-elevated flex flex-col gap-3"
+                >
+                  <div className="h-10 w-10 rounded-(--radius-md) bg-(--color-primary-soft) text-(--color-primary) flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Icon size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-(--color-foreground) group-hover:text-(--color-primary) transition-colors">
+                      {cat.name}
+                    </h3>
+                    <p className="text-xs text-(--color-muted-foreground) mt-0.5">Explore services</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* 3. FEATURED SERVICES PREVIEW */}
@@ -190,45 +195,21 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredServices.map((service) => (
-            <div 
-              key={service.id}
-              className="rounded-(--radius-lg) bg-(--color-card) border border-(--color-border) overflow-hidden shadow-soft hover:shadow-elevated transition-all flex flex-col justify-between"
-            >
-              <div className="p-5 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="px-2.5 py-1 rounded-full bg-(--color-muted) font-medium text-(--color-muted-foreground)">
-                    {service.category}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-(--color-accent-soft) text-(--color-accent) font-semibold">
-                    {service.badge}
-                  </span>
-                </div>
-
-                <h3 className="font-semibold text-base text-(--color-foreground) leading-snug line-clamp-2">
-                  {service.title}
-                </h3>
-
-                <p className="text-xs text-(--color-muted-foreground)">
-                  By <span className="font-medium text-(--color-foreground)">{service.provider}</span>
-                </p>
-              </div>
-
-              <div className="px-5 py-4 bg-(--color-muted)/40 border-t border-(--color-border) flex items-center justify-between">
-                <div>
-                  <span className="text-xs text-(--color-muted-foreground) block">Starting at</span>
-                  <span className="text-base font-bold text-(--color-primary)">{service.price}</span>
-                </div>
-                <div className="flex items-center gap-1 text-sm font-semibold text-(--color-foreground)">
-                  <Star size={15} className="fill-amber-400 text-amber-400" />
-                  <span>{service.rating}</span>
-                  <span className="text-xs text-(--color-muted-foreground) font-normal">({service.reviews})</span>
-                </div>
-              </div>
+        {loadingData && featuredServices.length === 0 ? (
+  <div className="flex justify-center p-12 text-(--color-muted-foreground)">
+    <Loader2 className="animate-spin" size={28} />
+  </div>
+          ) : featuredServices.length === 0 ? (
+            <div className="p-8 text-center text-sm text-(--color-muted-foreground) bg-(--color-card) border border-(--color-border) rounded-(--radius-lg)">
+              No featured services available right now.
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {featuredServices.map((service) => (
+                <ServiceCard key={service.id} service={service} />
+              ))}
+            </div>
+          )}
       </section>
 
       {/* 4. HOW IT WORKS */}
@@ -255,7 +236,7 @@ export default function LandingPage() {
             </div>
             <h3 className="font-semibold text-base text-(--color-foreground)">Connect & Book</h3>
             <p className="text-sm text-(--color-muted-foreground) leading-relaxed">
-              Send requests to meet a providers and the real time chat conversation will create exactly after you send a request and then you can talk each other.
+              Send requests to meet a provider and the real-time chat conversation will create automatically after you send a request so you can talk directly.
             </p>
           </div>
 

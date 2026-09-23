@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import ConversationSidebar from '../../components/chats/ConversationSidebar';
 
 export default function ChatLayout() {
@@ -38,21 +38,31 @@ export default function ChatLayout() {
         </div>
       </aside>
 
-      {/* Collapse/expand toggle — desktop only, always reachable at the sidebar's edge */}
+      {/* Expanded, highly visible toggle button — desktop only */}
       <button
         onClick={toggleCollapsed}
         className={`
-          hidden md:flex items-center justify-center
+          hidden md:flex items-center gap-2
           absolute top-1/2 -translate-y-1/2 z-30
-          w-5 h-12 rounded-r-(--radius-md)
-          bg-(--color-card) border border-l-0 border-(--color-border) shadow-soft
+          px-2.5 py-4 rounded-r-xl
+          bg-(--color-card) border border-l-0 border-(--color-border) shadow-elevated
           text-(--color-muted-foreground) hover:text-(--color-primary) hover:bg-(--color-muted)
-          transition-all duration-300 ease-in-out cursor-pointer
+          transition-all duration-300 ease-in-out cursor-pointer group
           ${collapsed ? 'left-0' : 'left-64 lg:left-80'}
         `}
-        title={collapsed ? 'Show conversations' : 'Hide conversations'}
+        title={collapsed ? 'Open Conversations Sidebar' : 'Hide Conversations Sidebar'}
       >
-        {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        {collapsed ? (
+          <>
+            
+            <span className="[writing-mode:vertical-lr] rotate-180 text-xs tracking-wider text-(--color-foreground) group-hover:text-(--color-primary) transition-colors select-none">
+              Open Conversations Sidebar
+            </span>
+            <ChevronRight size={14} className="shrink-0" />
+          </>
+        ) : (
+          <ChevronLeft size={16} className="shrink-0" />
+        )}
       </button>
 
       {/* Detail pane — always full width on md+ since the sidebar no longer takes flex space */}

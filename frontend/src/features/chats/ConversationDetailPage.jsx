@@ -20,12 +20,15 @@ export default function ConversationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hasOlder, setHasOlder] = useState(false);
+  const [nextPage, setNextPage] = useState(2); // page 1 loads on mount; loadOlder starts from page 2
   const [otherOnline, setOtherOnline] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
 
   const socketRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const bottomRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const skipAutoScrollRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +42,7 @@ export default function ConversationDetailPage() {
         const results = msgData.results || msgData;
         setMessages([...results].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)));
         setHasOlder(Boolean(msgData.next));
+        setNextPage(2);
         markConversationRead(Number(id));
       })
       .catch(() => { if (!cancelled) setError('Could not load this conversation.'); })
@@ -55,7 +59,7 @@ export default function ConversationDetailPage() {
 
     const connect = () => {
       if (cancelled) return;
-      const socket = new WebSocket(buildWsUrl(`ws/chat/${id}/`, { token }));
+      const socket = new WebSocket(buildWsUrl(`ws/chats/${id}/`, { token }));
       socketRef.current = socket;
 
       socket.onmessage = (event) => {
@@ -118,7 +122,14 @@ export default function ConversationDetailPage() {
     };
   }, [id, user, conversation?.other_participant_id]);
 
+  // Auto-scroll to bottom on genuinely new content (sent/received messages,
+  // typing indicator) — but NOT when older history was just prepended,
+  // which is handled separately by loadOlder's own scroll-position logic.
   useEffect(() => {
+    if (skipAutoScrollRef.current) {
+      skipAutoScrollRef.current = false;
+      return;
+    }
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, otherTyping]);
 
@@ -135,14 +146,30 @@ export default function ConversationDetailPage() {
   }, []);
 
   const loadOlder = async () => {
-    const nextPage = Math.floor(messages.length / 20) + 1; // matches MessagePagination.page_size = 20
+    const container = scrollContainerRef.current;
+    const prevScrollHeight = container?.scrollHeight ?? 0;
+    const prevScrollTop = container?.scrollTop ?? 0;
+
     try {
       const data = await chatApi.getMessages(id, nextPage);
       const older = [...(data.results || [])].sort(
         (a, b) => new Date(a.created_at) - new Date(b.created_at)
       );
+
+      skipAutoScrollRef.current = true;
       setMessages((prev) => [...older, ...prev]);
       setHasOlder(Boolean(data.next));
+      setNextPage((p) => p + 1);
+
+      // Restore the user's exact visual position — the new content was
+      // added above what they were looking at, so without this the whole
+      // view would otherwise jump.
+      requestAnimationFrame(() => {
+        if (container) {
+          const newScrollHeight = container.scrollHeight;
+          container.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop;
+        }
+      });
     } catch {
       // silently ignore — not critical
     }
@@ -172,7 +199,6 @@ export default function ConversationDetailPage() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 p-4 border-b border-(--color-border) bg-(--color-card) shrink-0">
-        {/* Only needed on mobile — desktop always shows the sidebar alongside this panel */}
         <Link to="/chats" className="md:hidden text-(--color-muted-foreground) hover:text-(--color-primary)">
           <ArrowLeft size={18} />
         </Link>
@@ -192,7 +218,7 @@ export default function ConversationDetailPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {hasOlder && (
           <button
             onClick={loadOlder}

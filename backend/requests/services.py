@@ -1,8 +1,10 @@
 
 from django.utils import timezone
+from django.db.models import F
 from rest_framework.exceptions import ValidationError
 from .models import ServiceRequest
 from notifications.services import NotificationService
+from profiles.models import ProviderProfile
 
 ALLOWED_TRANSITIONS = {
     "PENDING": ["ACCEPTED", "REJECTED", "CANCELLED"],
@@ -98,6 +100,10 @@ class ServiceRequestService:
                     title="Service Completed",
                     message="Service completed. Please leave a review.",
                     request=request_obj
+                )
+                
+                ProviderProfile.objects.filter(pk=request_obj.provider.pk).update(
+                    completed_jobs=F("completed_jobs") + 1
                 )
 
             request_obj.status = new_status

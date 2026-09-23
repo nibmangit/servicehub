@@ -8,12 +8,15 @@ import { useAuth } from '../../context/AuthContext';
 import { formatPrice } from '../../lib/priceFormat';
 import RequestServiceModal from '../../components/requests/RequestServiceModal';
 import ReviewsList from '../../components/reviews/ReviewsList';
+import { usePaginatedResource } from '../../lib/usePaginatedResource';
+import LoadMoreButton from '../../components/common/LoadMoreButton';
 
 const ACTIVE_STATUSES = ['PENDING', 'ACCEPTED', 'IN_PROGRESS'];
 
 export default function ServiceDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const serviceReviews = usePaginatedResource(reviewsApi.getReviews, { service: id });
   const navigate = useNavigate();
 
   const [service, setService] = useState(null);
@@ -38,14 +41,10 @@ export default function ServiceDetailPage() {
       setError('');
       setRequestSent(false);
       try {
-        const [serviceData, reviewsData] = await Promise.all([
-          servicesApi.getService(id),
-          reviewsApi.getReviews({service: id}),
-        ]);
+        const serviceData = await servicesApi.getService(id);
 
         if (!cancelled) {
           setService(serviceData);
-          setReviews(reviewsData.results || []);
           setActiveImage(0);
         }
       } catch (err) {
@@ -111,7 +110,7 @@ export default function ServiceDetailPage() {
       navigate('/login');
       return;
     } 
-    navigate(`/messages?provider=${service.provider_id || service.provider_email}`);
+    navigate(`/chats?provider=${service.provider_id || service.provider_email}`);
   };
 
   const handleRequestClick = () => {
@@ -292,16 +291,23 @@ export default function ServiceDetailPage() {
 
             {/* Reviews Section */}
             <div className="space-y-4 bg-(--color-card) border border-(--color-border) p-6 rounded-(--radius-2xl) shadow-soft">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-(--color-foreground)">Customer Reviews</h2>
-                {service.review_count > 0 && (
-                  <span className="text-xs font-semibold text-(--color-muted-foreground)">
-                    {reviews.length} of {service.review_count} shown
-                  </span>
-                )}
-              </div>
-              <ReviewsList reviews={reviews} />
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-(--color-foreground)">Customer Reviews</h2>
+              {serviceReviews.count > 0 && (
+                <span className="text-xs font-semibold text-(--color-muted-foreground)">
+                  {serviceReviews.items.length} of {serviceReviews.count} shown
+                </span>
+              )}
             </div>
+            <ReviewsList reviews={serviceReviews.items} />
+            <LoadMoreButton
+              hasMore={serviceReviews.hasMore}
+              loadingMore={serviceReviews.loadingMore}
+              onClick={serviceReviews.loadMore}
+              loadedCount={serviceReviews.items.length}
+              totalCount={serviceReviews.count}
+            />
+          </div>
 
           </div>
 
@@ -335,19 +341,19 @@ export default function ServiceDetailPage() {
                   ) : checkingExisting ? (
                     <div className="h-16 rounded-xl bg-(--color-muted) animate-pulse" />
                   ) : existingRequest ? (
-                    <div className="p-4 rounded-xl bg-(--color-warning)/10 text-(--color-warning-foreground) text-sm border border-(--color-warning)/30 space-y-3 shadow-soft">
-                      <div className="flex items-center gap-2 font-semibold">
-                        <AlertCircle size={18} className="text-(--color-warning) shrink-0" />
-                        <span>Active Request Exists</span>
-                      </div>
-                      <p className="text-xs text-(--color-muted-foreground)">You have a pending/active booking for this service.</p>
-                      <Link 
-                        to={`/requests/${existingRequest.id}`} 
-                        className="block text-center w-full py-2 rounded-lg bg-(--color-card) font-semibold text-xs border border-(--color-border) hover:bg-(--color-muted) transition-colors"
-                      >
-                        View Request Details
-                      </Link>
-                    </div>
+   <div className="p-4 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 text-amber-900 dark:text-amber-200 text-sm border border-amber-500/30 dark:border-amber-500/40 space-y-3 shadow-soft">
+    <div className="flex items-center gap-2 font-semibold">
+      <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
+      <span className="text-amber-900 dark:text-amber-200">Active Request Imminent</span>
+    </div>
+    <p className="text-xs text-amber-800/80 dark:text-amber-200/80">You have a pending/active booking for this service.</p>
+    <Link 
+      to={`/requests/${existingRequest.id}`} 
+      className="block text-center w-full py-2 rounded-lg bg-(--color-card) font-semibold text-xs text-(--color-card-foreground) border border-amber-500/30 hover:bg-(--color-muted) transition-colors shadow-xs"
+    >
+      View Request Details
+    </Link>
+  </div>
                   ) : (
                     <div className="space-y-3">
                       <button

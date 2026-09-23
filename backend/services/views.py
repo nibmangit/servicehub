@@ -34,6 +34,7 @@ class ServiceListCreateView(ListAPIView):
 class MyServicesListView(ListCreateAPIView):
     serializer_class = ServiceSerializer
     permission_classes = [IsAuthenticated, IsProviderOrReadOnly]
+    pagination_class = None
     
     def get_queryset(self):
         return (
