@@ -7,6 +7,7 @@ import './styles.css';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ChatProvider } from './context/ChatContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -14,8 +15,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <ThemeProvider>
         <AuthProvider>
           <NotificationProvider>
-            <Toaster position="top-right" />
-            <App />
+            <ChatProvider>
+              <Toaster position="top-right" />
+              <App />
+            </ChatProvider>
           </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>

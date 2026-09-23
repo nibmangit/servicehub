@@ -22,6 +22,8 @@ import ProviderPublicProfilePage from './features/profile/ProviderPublicProfileP
 import MyReviewsPage from './features/reviews/MyReviewsPage';
 import ReviewDetailPage from './features/reviews/ReviewDetailPage';
 import NotificationsPage from './features/notifications/NotificationsPage';
+import ConversationsListPage from './features/chats/ConversationsListPage';
+import ConversationDetailPage from './features/chats/ConversationDetailPage';
 
 export default function App() {
   return (
@@ -47,6 +49,8 @@ export default function App() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/chats" element={<ConversationsListPage />} />
+        <Route path="/chats/:id" element={<ConversationDetailPage />} />
         <Route path="/requests" element={<RequestsPage />} />
         <Route path="/requests/:id" element={<RequestDetailPage />} />
         <Route path="/reviews" element={<MyReviewsPage />} />

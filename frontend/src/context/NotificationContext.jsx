@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { notificationApi } from '../services/notificationApi';
 import { useAuth } from './AuthContext';
+import { buildWsUrl } from '../lib/ws';
 
 const NotificationContext = createContext(null);
 
@@ -60,8 +61,7 @@ export function NotificationProvider({ children }) {
 
     const connect = () => {
       if (cancelled) return;
-      const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      const wsUrl = `${wsScheme}://127.0.0.1:8000/ws/notifications/?token=${token}`;
+      const wsUrl = buildWsUrl('ws/notifications/', { token });
       const socket = new WebSocket(wsUrl);
       socketRef.current = socket;
 

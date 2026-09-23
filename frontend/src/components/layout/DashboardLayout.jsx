@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Search, 
-  ClipboardList, 
-  Star, 
-  Wrench, 
-  UserPlus, 
-  User, 
-  MessageSquare, 
-  X, 
-  LogOut 
+import {
+  LayoutDashboard,
+  Search,
+  ClipboardList,
+  Star,
+  Wrench,
+  UserPlus,
+  User,
+  MessageSquare,
+  Bell,
+  X,
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useChat } from '../../context/ChatContext';
+import { useNotifications } from '../../context/NotificationContext';
 import CompleteProfileModal from '../../features/profile/CompleteProfileModal';
 import Header from './Header';
 
@@ -23,11 +26,23 @@ const sidebarLinkClass = ({ isActive }) =>
       : 'text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-(--color-muted)'
   }`;
 
+function NavBadge({ count }) {
+  if (!count) return null;
+  return (
+    <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-(--color-primary) text-(--color-primary-foreground) text-xs font-semibold flex items-center justify-center">
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
 function SidebarNav({ isProvider, onNavigate, logout }) {
+  const { unreadCount: unreadChats } = useChat();
+  const { unreadCount: unreadNotifs } = useNotifications();
+
   return (
     <div className="flex-1 flex flex-col justify-between overflow-y-auto px-4 py-6">
       <nav className="space-y-6">
-         
+
         <div>
           <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
             General
@@ -42,18 +57,20 @@ function SidebarNav({ isProvider, onNavigate, logout }) {
             <NavLink to="/requests" className={sidebarLinkClass} onClick={onNavigate}>
               <ClipboardList size={18} /> My Requests
             </NavLink>
-            <NavLink to="/chat" className={sidebarLinkClass} onClick={onNavigate}>
+            <NavLink to="/chats" className={sidebarLinkClass} onClick={onNavigate}>
               <MessageSquare size={18} /> Messages
+              <NavBadge count={unreadChats} />
             </NavLink>
             <NavLink to="/notifications" className={sidebarLinkClass} onClick={onNavigate}>
-              <MessageSquare size={18} /> Notifications
+              <Bell size={18} /> Notifications
+              <NavBadge count={unreadNotifs} />
             </NavLink>
             <NavLink to="/reviews" className={sidebarLinkClass} onClick={onNavigate}>
               <Star size={17} /> My Reviews
             </NavLink>
           </div>
         </div>
- 
+
         <div>
           <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
             {isProvider ? 'Provider Hub' : 'Client Hub'}
@@ -70,7 +87,7 @@ function SidebarNav({ isProvider, onNavigate, logout }) {
             )}
           </div>
         </div>
- 
+
         <div>
           <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
             Account
@@ -83,7 +100,7 @@ function SidebarNav({ isProvider, onNavigate, logout }) {
         </div>
 
       </nav>
- 
+
       <div className="pt-6 mt-6 border-t border-(--color-border)">
         <button
           onClick={() => {
@@ -107,19 +124,15 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-(--color-background)">
-      
-      {/* Global Header */}
+
       <Header variant="dashboard" onMenuClick={() => setMobileSidebarOpen(true)} />
 
-      {/* Main Container Layout */}
       <div className="flex-1 flex overflow-hidden max-w-[1600px] w-full mx-auto">
-        
-        {/* Desktop Sidebar - Changed to top-0 and added full height minus header offset cleanly */}
+
         <aside className="hidden md:flex md:w-64 flex-col border-r border-(--color-border) bg-(--color-card)/55 sticky top-0 h-[calc(100vh-4rem)] shrink-0">
           <SidebarNav isProvider={user?.is_provider} logout={logout} />
         </aside>
 
-        {/* Mobile Sidebar Drawer */}
         {mobileSidebarOpen && (
           <div className="md:hidden fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileSidebarOpen(false)} />
@@ -133,16 +146,15 @@ export default function DashboardLayout() {
                   <X size={18} />
                 </button>
               </div>
-              <SidebarNav 
-                isProvider={user?.is_provider} 
-                onNavigate={() => setMobileSidebarOpen(false)} 
+              <SidebarNav
+                isProvider={user?.is_provider}
+                onNavigate={() => setMobileSidebarOpen(false)}
                 logout={logout}
               />
             </div>
           </div>
         )}
 
-        {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-(--color-background)">
           <Outlet />
         </main>
