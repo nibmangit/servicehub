@@ -86,12 +86,13 @@ export default function Header({ variant = 'public', onMenuClick }) {
 
           {/* Notifications Bell */}
           {user && (
-            <button
+            <Link
+              to="/notifications"
               aria-label="Notifications"
-              className="p-2 rounded-(--radius-md) text-(--color-muted-foreground) hover:bg-(--color-muted) transition-colors relative cursor-pointer"
+              className="p-2 rounded-(--radius-md) text-(--color-muted-foreground) hover:bg-(--color-muted) transition-colors relative cursor-pointer inline-flex items-center justify-center"
             >
-              <Bell size={18} />
-            </button>
+              <Bell size={18} /> 
+            </Link>
           )}
 
           {/* User Profile Dropdown or Logged Out Auth Buttons */}
@@ -133,7 +134,7 @@ export default function Header({ variant = 'public', onMenuClick }) {
                   </Link>
 
                   <Link
-                    to="/chat"
+                    to="/chats"
                     onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-(--color-foreground) hover:bg-(--color-muted) transition-colors lg:hidden"
                   >
