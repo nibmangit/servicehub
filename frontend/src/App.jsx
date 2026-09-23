@@ -21,8 +21,10 @@ import LandingPage from './features/LandingPaga';
 import ProviderPublicProfilePage from './features/profile/ProviderPublicProfilePage';
 import MyReviewsPage from './features/reviews/MyReviewsPage';
 import ReviewDetailPage from './features/reviews/ReviewDetailPage';
-import NotificationsPage from './features/notifications/NotificationsPage';
-import ConversationsListPage from './features/chats/ConversationsListPage';
+import NotificationsPage from './features/notifications/NotificationsPage'; 
+
+import ChatLayout from './features/chats/ChatLayout';
+import EmptyChatState from './features/chats/EmptyChatState';
 import ConversationDetailPage from './features/chats/ConversationDetailPage';
 
 export default function App() {
@@ -49,8 +51,10 @@ export default function App() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/chats" element={<ConversationsListPage />} />
-        <Route path="/chats/:id" element={<ConversationDetailPage />} />
+        <Route path="/chats" element={<ChatLayout />}>
+          <Route index element={<EmptyChatState />} />
+          <Route path=":id" element={<ConversationDetailPage />} />
+        </Route>
         <Route path="/requests" element={<RequestsPage />} />
         <Route path="/requests/:id" element={<RequestDetailPage />} />
         <Route path="/reviews" element={<MyReviewsPage />} />

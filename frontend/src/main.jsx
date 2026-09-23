@@ -14,12 +14,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <NotificationProvider>
-            <ChatProvider>
+          <ChatProvider>
+            <NotificationProvider>
               <Toaster position="top-right" />
               <App />
-            </ChatProvider>
-          </NotificationProvider>
+            </NotificationProvider>
+          </ChatProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

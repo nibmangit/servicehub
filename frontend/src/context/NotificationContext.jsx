@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { notificationApi } from '../services/notificationApi';
 import { useAuth } from './AuthContext';
+import { useChat } from './ChatContext';
 import { buildWsUrl } from '../lib/ws';
 
 const NotificationContext = createContext(null);
@@ -24,6 +25,7 @@ export function NotificationProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { refresh: refreshChat } = useChat();
   const socketRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
 
@@ -71,6 +73,10 @@ export function NotificationProvider({ children }) {
 
         setNotifications((prev) => [newNotif, ...prev]);
         setUnreadCount((prev) => prev + 1);
+
+        if (newNotif.notification_type === 'NEW_MESSAGE') {
+          refreshChat();
+        }
 
         toast.custom((t) => (
           <div

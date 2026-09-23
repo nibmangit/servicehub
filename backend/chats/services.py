@@ -5,6 +5,7 @@ from notifications.services import NotificationService
 from .models import Conversation 
 from django.shortcuts import get_object_or_404
 from .models import Conversation
+from .active import ActiveChatService
 
 
 class ConversationAccessService:
@@ -56,13 +57,15 @@ class ChatService:
             else request_obj.customer
         )
 
-        NotificationService.notify(
-            user=receiver,
-            notification_type="NEW_MESSAGE",
-            title="New Message",
-            message=f"You received a new message regarding {request_obj.service.title}",
-            request=request_obj
-        )
+        if ActiveChatService.get_active(receiver.id) != conversation.id:
+            NotificationService.notify(
+                user=receiver,
+                notification_type="NEW_MESSAGE",
+                title="New Message",
+                message=f"You received a new message regarding {request_obj.service.title}",
+                request=request_obj
+            )
+
 
         return message
     

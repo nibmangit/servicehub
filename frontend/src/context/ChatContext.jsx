@@ -41,22 +41,31 @@ export function ChatProvider({ children }) {
     await Promise.all([fetchConversations(), fetchUnreadCount()]);
   }, [fetchConversations, fetchUnreadCount]);
 
-  // Called by ConversationDetailPage when a conversation is opened/read,
-  // so the sidebar badge and list update without a full refetch.
   const markConversationRead = useCallback((conversationId) => {
-    setConversations((prev) =>
-      prev.map((c) => (c.id === conversationId ? { ...c, unread_count: 0 } : c))
-    );
-    setUnreadCount((prev) => {
-      const conv = conversations.find((c) => c.id === conversationId);
-      const delta = conv?.unread_count || 0;
-      return Math.max(0, prev - delta);
-    });
-  }, [conversations]);
+  setConversations((prev) => {
+    const conv = prev.find((c) => c.id === conversationId);
+    const delta = conv?.unread_count || 0;
+    if (delta > 0) {
+      setUnreadCount((count) => Math.max(0, count - delta));
+    }
+    return prev.map((c) => (c.id === conversationId ? { ...c, unread_count: 0 } : c));
+  });
+}, []);
+
+const bumpConversation = useCallback((conversationId, lastMessage) => {
+  setConversations((prev) => {
+    const idx = prev.findIndex((c) => c.id === conversationId);
+    if (idx === -1) return prev; // not in the list yet — next refresh() will pick it up
+    const updated = { ...prev[idx], last_message: lastMessage };
+    const rest = prev.filter((c) => c.id !== conversationId);
+    return [updated, ...rest];
+  });
+}, []);
+  
 
   return (
     <ChatContext.Provider
-      value={{ conversations, unreadCount, loading, refresh, markConversationRead }}
+      value={{ conversations, unreadCount, loading, refresh, markConversationRead, bumpConversation }}
     >
       {children}
     </ChatContext.Provider>

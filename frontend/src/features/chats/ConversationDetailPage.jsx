@@ -13,7 +13,7 @@ import MessageInput from '../../components/chats/MessageInput';
 export default function ConversationDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const { markConversationRead } = useChat();
+  const { markConversationRead, bumpConversation } = useChat();
 
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -27,7 +27,6 @@ export default function ConversationDetailPage() {
   const reconnectTimeoutRef = useRef(null);
   const bottomRef = useRef(null);
 
-  // Initial load: conversation details + first page of message history (REST)
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -48,7 +47,6 @@ export default function ConversationDetailPage() {
     return () => { cancelled = true; };
   }, [id]);
 
-  // WebSocket: live messages, typing, presence, read receipts
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token || !user) return;
@@ -70,6 +68,13 @@ export default function ConversationDetailPage() {
               if (prev.some((m) => m.id === incoming.id)) return prev;
               return [...prev, incoming];
             });
+
+            bumpConversation(Number(id), {
+              content: incoming.content,
+              sender: incoming.sender_email,
+              created_at: incoming.created_at,
+            });
+
             if (incoming.sender_id !== user.id) {
               markConversationRead(Number(id));
             }
@@ -86,8 +91,6 @@ export default function ConversationDetailPage() {
             break;
           }
           case 'messages_read': {
-            // Approximation: the other side just connected/read, so mark our
-            // own sent messages as read. Harmless if triggered by our own connect too.
             setMessages((prev) =>
               prev.map((m) => (m.sender_id === user.id ? { ...m, is_read: true } : m))
             );
@@ -132,7 +135,7 @@ export default function ConversationDetailPage() {
   }, []);
 
   const loadOlder = async () => {
-    const nextPage = Math.floor(messages.length / 12) + 1; // adjust if MessagePagination page size differs
+    const nextPage = Math.floor(messages.length / 20) + 1; // matches MessagePagination.page_size = 20
     try {
       const data = await chatApi.getMessages(id, nextPage);
       const older = [...(data.results || [])].sort(
@@ -147,7 +150,7 @@ export default function ConversationDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="h-full flex items-center justify-center">
         <div className="flex flex-col items-center space-y-3">
           <div className="h-10 w-10 rounded-full border-3 border-(--color-border) border-t-(--color-primary) animate-spin" />
           <p className="text-xs text-(--color-muted-foreground) font-medium">Loading conversation...</p>
@@ -158,7 +161,7 @@ export default function ConversationDetailPage() {
 
   if (error || !conversation) {
     return (
-      <div className="max-w-3xl mx-auto py-12 px-4">
+      <div className="h-full flex items-center justify-center p-4">
         <div className="p-4 rounded-lg bg-(--color-destructive)/10 text-(--color-destructive) text-sm border border-(--color-destructive)/20">
           {error || 'Conversation not found.'}
         </div>
@@ -167,10 +170,10 @@ export default function ConversationDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-(--color-border) bg-(--color-card)">
-        <Link to="/chats" className="text-(--color-muted-foreground) hover:text-(--color-primary)">
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-3 p-4 border-b border-(--color-border) bg-(--color-card) shrink-0">
+        {/* Only needed on mobile — desktop always shows the sidebar alongside this panel */}
+        <Link to="/chats" className="md:hidden text-(--color-muted-foreground) hover:text-(--color-primary)">
           <ArrowLeft size={18} />
         </Link>
         <div className="relative">
@@ -189,7 +192,6 @@ export default function ConversationDetailPage() {
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {hasOlder && (
           <button

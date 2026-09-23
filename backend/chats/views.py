@@ -27,12 +27,12 @@ class ConversationListView(ListAPIView):
                 Q(request__customer=user) |
                 Q(request__provider=user.providerprofile)
                 ).select_related("request", "request__customer", "request__service"
-                ).prefetch_related("messages__sender")
+                ).prefetch_related("messages__sender").order_by("-updated_at")
             )
         return(
             Conversation.objects.filter(request__customer=user 
                                                         ).select_related("request", "request__service"
-                                                        ).prefetch_related("messages__sender")
+                                                        ).prefetch_related("messages__sender").order_by("-updated_at")
         )
 
 class ConversationDetailView(APIView):

@@ -5,12 +5,20 @@ export default function MessageInput({ onSend, onTyping }) {
   const [content, setContent] = useState('');
   const typingTimeoutRef = useRef(null);
 
+  const isTypingRef = useRef(false);
+
   const handleChange = (e) => {
     setContent(e.target.value);
 
-    onTyping(true);
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      onTyping(true);
+    }
     clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => onTyping(false), 2000);
+    typingTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+      onTyping(false);
+    }, 2000);
   };
 
   const handleSend = () => {

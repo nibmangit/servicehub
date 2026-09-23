@@ -1,10 +1,12 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 import json
+from django.utils import timezone
 
 from .services import ChatService, ChatReadService, ConversationAccessService
-from .models import Conversation
+from .models import Conversation, Message
 from .presence import PresenceService
+from .active import ActiveChatService
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -30,9 +32,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         await self.set_user_online(user.id)
         await self.broadcast_presence(user.id, True)
+        
+        other_id = await self.get_other_participant_id()
+        if other_id:
+            other_online = await self.check_online(other_id)
+            await self.send(text_data=json.dumps({
+                "type": "presence",
+                "user_id": other_id,
+                "is_online": other_online
+            }))
 
         await self.mark_messages_as_read()
         await self.broadcast_read_state()
+        
+        await self.set_active_chat(user.id, int(self.conversation_id))
         
 
     async def disconnect(self, close_code):
@@ -41,6 +54,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if user and not user.is_anonymous:
             await self.set_user_offline(user.id)
             await self.broadcast_presence(user.id, False)
+            await self.clear_active_chat(user.id)
    
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -87,10 +101,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # ---------------- EVENTS ----------------
     #message broadcast
     async def chat_message(self, event):
+        message = event["message"]
+        user = self.scope["user"]
+        
         await self.send(text_data=json.dumps({
             "type": "message",
             "data": event["message"]
         }))
+        
+        if user and not user.is_anonymous and message["sender_id"] != user.id:
+            await self.mark_single_message_read(message["id"])
+            await self.broadcast_read_state()
     
     #typing broadcast
     async def typing_event(self, event):
@@ -158,6 +179,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         ChatReadService.mark_conversation_as_read(conversation, user)
         
     @database_sync_to_async
+    def mark_single_message_read(self, message_id):
+        Message.objects.filter(id=message_id, is_read=False).update(
+            is_read=True, read_at=timezone.now()
+        )
+        
+    @database_sync_to_async
     def is_allowed(self, conversation_id, user):
         try:
             ConversationAccessService.get_conversation_for_user(
@@ -168,6 +195,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         except Exception:
             return False
+        
+    @database_sync_to_async
+    def get_other_participant_id(self):
+        conversation = Conversation.objects.select_related(
+            "request", "request__customer", "request__provider__user"
+        ).get(id=self.conversation_id)
+        user = self.scope["user"]
+        request_obj = conversation.request
+        if request_obj.customer_id == user.id:
+            return request_obj.provider.user.id
+        return request_obj.customer.id
+    
+    @database_sync_to_async
+    def check_online(self, user_id):
+        return PresenceService.is_online(user_id)
+
+    @database_sync_to_async
+    def set_active_chat(self, user_id, conversation_id):
+        ActiveChatService.set_active(user_id, conversation_id)
+
+    @database_sync_to_async
+    def clear_active_chat(self, user_id):
+        ActiveChatService.clear_active(user_id)
     
     @database_sync_to_async
     def set_user_online(self, user_id):
