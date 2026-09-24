@@ -93,23 +93,26 @@ export default function AdminApplications() {
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-2">
+          {/* Responsive Grid layout for applications */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((app) => (
               <button
                 key={app.id}
                 onClick={() => openApplication(app)}
-                className="flex items-center justify-between gap-4 p-4 rounded-(--radius-lg) bg-(--color-card) border border-(--color-border) hover:border-(--color-primary)/50 transition-colors text-left cursor-pointer"
+                className="flex items-center justify-between gap-4 p-4 rounded-(--radius-lg) bg-(--color-card) border border-(--color-border) hover:border-(--color-primary)/50 transition-colors text-left cursor-pointer h-full"
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-(--color-foreground) truncate">
                     {app.user_full_name || app.user_email}
                   </p>
-                  <p className="text-xs text-(--color-muted-foreground) mt-0.5">
+                  <p className="text-xs text-(--color-muted-foreground) mt-0.5 truncate">
                     {app.experience_years ? `${app.experience_years} yrs experience` : 'Experience not specified'}
                     {app.skills?.length > 0 && ` · ${app.skills.join(', ')}`}
                   </p>
                 </div>
-                <AdminStatusBadge status={app.status} />
+                <div className="shrink-0">
+                  <AdminStatusBadge status={app.status} />
+                </div>
               </button>
             ))}
           </div>

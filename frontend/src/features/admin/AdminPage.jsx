@@ -5,6 +5,10 @@ import {
 import AdminOverview from './sections/AdminOverview';
 import AdminApplications from './sections/AdminApplications';
 import AdminUsers from './sections/AdminUsers';
+import AdminServices from './sections/AdminServices';
+import AdminRequests from './sections/AdminRequests';
+import AdminReviews from './sections/AdminReviews';
+import AdminIdentityVerifications from './sections/AdminIdentityVerifications';
 import AdminCategoriesSkills from './sections/AdminCategoriesSkills';
 
 const SECTIONS = [
@@ -52,6 +56,10 @@ export default function AdminPage() {
         {active === 'applications' && <AdminApplications />}
         {active === 'users' && <AdminUsers />}
         {active === 'categories' && <AdminCategoriesSkills />}
+        {active === 'services' && <AdminServices />}
+        {active === 'requests' && <AdminRequests />}
+        {active === 'reviews' && <AdminReviews />}
+        {active === 'identity' && <AdminIdentityVerifications />}
       </div>
     </div>
   );

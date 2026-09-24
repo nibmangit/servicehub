@@ -99,12 +99,13 @@ export default function AdminUsers() {
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-2">
+          {/* Responsive Grid layout for users */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((u) => (
               <button
                 key={u.id}
                 onClick={() => openUser(u)}
-                className="flex items-center justify-between gap-4 p-4 rounded-(--radius-lg) bg-(--color-card) border border-(--color-border) hover:border-(--color-primary)/50 transition-colors text-left cursor-pointer"
+                className="flex items-center justify-between gap-4 p-4 rounded-(--radius-lg) bg-(--color-card) border border-(--color-border) hover:border-(--color-primary)/50 transition-colors text-left cursor-pointer h-full"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">

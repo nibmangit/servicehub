@@ -11,7 +11,9 @@ import {
   MessageSquare,
   Bell,
   X,
-  LogOut
+  LogOut,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../context/ChatContext';
@@ -19,82 +21,164 @@ import { useNotifications } from '../../context/NotificationContext';
 import CompleteProfileModal from '../../features/profile/CompleteProfileModal';
 import Header from './Header';
 
-const sidebarLinkClass = ({ isActive }) =>
-  `flex items-center gap-3 px-3 py-2.5 rounded-(--radius-md) text-sm font-medium transition-colors ${
-    isActive
-      ? 'text-(--color-primary) bg-(--color-primary-soft)'
-      : 'text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-(--color-muted)'
-  }`;
-
-function NavBadge({ count }) {
+function NavBadge({ count, isCollapsed }) {
   if (!count) return null;
   return (
-    <span className="ml-auto min-w-[1.25rem] h-5 px-1.5 rounded-full bg-(--color-primary) text-(--color-primary-foreground) text-xs font-semibold flex items-center justify-center">
+    <span
+      className={`${
+        isCollapsed
+          ? 'absolute -top-1 -right-1 min-w-[1.1rem] h-4 text-[10px]'
+          : 'ml-auto min-w-[1.25rem] h-5 text-xs'
+      } px-1 rounded-full bg-(--color-primary) text-(--color-primary-foreground) font-semibold flex items-center justify-center`}
+    >
       {count > 99 ? '99+' : count}
     </span>
   );
 }
 
-function SidebarNav({ isProvider, onNavigate, logout }) {
+function SidebarNav({ isProvider, onNavigate, logout, isCollapsed = false }) {
   const { unreadCount: unreadChats } = useChat();
   const { unreadCount: unreadNotifs } = useNotifications();
+  const { user } = useAuth();
+
+  const sidebarLinkClass = ({ isActive }) =>
+    `flex items-center ${
+      isCollapsed ? 'justify-center px-2' : 'gap-3 px-3'
+    } py-2.5 rounded-(--radius-md) text-sm font-medium transition-colors relative ${
+      isActive
+        ? 'text-(--color-primary) bg-(--color-primary-soft)'
+        : 'text-(--color-muted-foreground) hover:text-(--color-foreground) hover:bg-(--color-muted)'
+    }`;
 
   return (
-    <div className="flex-1 flex flex-col justify-between overflow-y-auto px-4 py-6">
+    <div className="flex-1 flex flex-col justify-between overflow-y-auto px-3 py-6">
       <nav className="space-y-6">
 
         <div>
-          <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
-            General
-          </div>
+          {!isCollapsed && (
+            <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
+              General
+            </div>
+          )}
           <div className="space-y-1">
-            <NavLink to="/dashboard" className={sidebarLinkClass} onClick={onNavigate}>
-              <LayoutDashboard size={18} /> Dashboard
+            <NavLink
+              to="/dashboard"
+              className={sidebarLinkClass}
+              onClick={onNavigate}
+              title={isCollapsed ? "Dashboard" : undefined}
+            >
+              <LayoutDashboard size={18} className="shrink-0" />
+              {!isCollapsed && <span>Dashboard</span>}
             </NavLink>
-            <NavLink to="/services" className={sidebarLinkClass} onClick={onNavigate}>
-              <Search size={18} /> Browse Services
+
+            {user?.is_staff && (
+              <NavLink
+                to="/admin"
+                className={sidebarLinkClass}
+                onClick={onNavigate}
+                title={isCollapsed ? "Admin Panel" : undefined}
+              >
+                <LayoutDashboard size={18} className="shrink-0" />
+                {!isCollapsed && <span>Admin Panel</span>}
+              </NavLink>
+            )}
+            
+            <NavLink
+              to="/services"
+              className={sidebarLinkClass}
+              onClick={onNavigate}
+              title={isCollapsed ? "Browse Services" : undefined}
+            >
+              <Search size={18} className="shrink-0" />
+              {!isCollapsed && <span>Browse Services</span>}
             </NavLink>
-            <NavLink to="/requests" className={sidebarLinkClass} onClick={onNavigate}>
-              <ClipboardList size={18} /> My Requests
+            <NavLink
+              to="/requests"
+              className={sidebarLinkClass}
+              onClick={onNavigate}
+              title={isCollapsed ? "My Requests" : undefined}
+            >
+              <ClipboardList size={18} className="shrink-0" />
+              {!isCollapsed && <span>My Requests</span>}
             </NavLink>
-            <NavLink to="/chats" className={sidebarLinkClass} onClick={onNavigate}>
-              <MessageSquare size={18} /> Messages
-              <NavBadge count={unreadChats} />
+            <NavLink
+              to="/chats"
+              className={sidebarLinkClass}
+              onClick={onNavigate}
+              title={isCollapsed ? "Messages" : undefined}
+            >
+              <MessageSquare size={18} className="shrink-0" />
+              {!isCollapsed && <span>Messages</span>}
+              <NavBadge count={unreadChats} isCollapsed={isCollapsed} />
             </NavLink>
-            <NavLink to="/notifications" className={sidebarLinkClass} onClick={onNavigate}>
-              <Bell size={18} /> Notifications
-              <NavBadge count={unreadNotifs} />
+            <NavLink
+              to="/notifications"
+              className={sidebarLinkClass}
+              onClick={onNavigate}
+              title={isCollapsed ? "Notifications" : undefined}
+            >
+              <Bell size={18} className="shrink-0" />
+              {!isCollapsed && <span>Notifications</span>}
+              <NavBadge count={unreadNotifs} isCollapsed={isCollapsed} />
             </NavLink>
-            <NavLink to="/reviews" className={sidebarLinkClass} onClick={onNavigate}>
-              <Star size={17} /> My Reviews
+            <NavLink
+              to="/reviews"
+              className={sidebarLinkClass}
+              onClick={onNavigate}
+              title={isCollapsed ? "My Reviews" : undefined}
+            >
+              <Star size={17} className="shrink-0" />
+              {!isCollapsed && <span>My Reviews</span>}
             </NavLink>
           </div>
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
-            {isProvider ? 'Provider Hub' : 'Client Hub'}
-          </div>
+          {!isCollapsed && (
+            <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
+              {isProvider ? 'Provider Hub' : 'Client Hub'}
+            </div>
+          )}
           <div className="space-y-1">
             {isProvider ? (
-              <NavLink to="/my-services" className={sidebarLinkClass} onClick={onNavigate}>
-                <Wrench size={18} /> Manage Listings
+              <NavLink
+                to="/my-services"
+                className={sidebarLinkClass}
+                onClick={onNavigate}
+                title={isCollapsed ? "Manage Listings" : undefined}
+              >
+                <Wrench size={18} className="shrink-0" />
+                {!isCollapsed && <span>Manage Listings</span>}
               </NavLink>
             ) : (
-              <NavLink to="/apply-provider" className={sidebarLinkClass} onClick={onNavigate}>
-                <UserPlus size={18} /> Become a Provider
+              <NavLink
+                to="/apply-provider"
+                className={sidebarLinkClass}
+                onClick={onNavigate}
+                title={isCollapsed ? "Become a Provider" : undefined}
+              >
+                <UserPlus size={18} className="shrink-0" />
+                {!isCollapsed && <span>Become a Provider</span>}
               </NavLink>
             )}
           </div>
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
-            Account
-          </div>
+          {!isCollapsed && (
+            <div className="text-xs font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-2 px-1">
+              Account
+            </div>
+          )}
           <div className="space-y-1">
-            <NavLink to="/profile" className={sidebarLinkClass} onClick={onNavigate}>
-              <User size={18} /> Profile Settings
+            <NavLink
+              to="/profile"
+              className={sidebarLinkClass}
+              onClick={onNavigate}
+              title={isCollapsed ? "Profile Settings" : undefined}
+            >
+              <User size={18} className="shrink-0" />
+              {!isCollapsed && <span>Profile Settings</span>}
             </NavLink>
           </div>
         </div>
@@ -107,9 +191,13 @@ function SidebarNav({ isProvider, onNavigate, logout }) {
             if (onNavigate) onNavigate();
             logout();
           }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-(--radius-md) text-sm font-medium text-(--color-destructive) hover:bg-(--color-destructive)/10 transition-colors cursor-pointer"
+          title={isCollapsed ? "Log out" : undefined}
+          className={`w-full flex items-center ${
+            isCollapsed ? 'justify-center px-2' : 'gap-3 px-3'
+          } py-2.5 rounded-(--radius-md) text-sm font-medium text-(--color-destructive) hover:bg-(--color-destructive)/10 transition-colors cursor-pointer`}
         >
-          <LogOut size={18} /> Log out
+          <LogOut size={18} className="shrink-0" />
+          {!isCollapsed && <span>Log out</span>}
         </button>
       </div>
     </div>
@@ -119,6 +207,7 @@ function SidebarNav({ isProvider, onNavigate, logout }) {
 export default function DashboardLayout() {
   const { user, updateUser, logout } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
 
   const profileIncomplete = !user?.full_name || user.full_name.trim() === '';
 
@@ -129,8 +218,26 @@ export default function DashboardLayout() {
 
       <div className="flex-1 flex overflow-hidden max-w-[1600px] w-full mx-auto">
 
-        <aside className="hidden md:flex md:w-64 flex-col border-r border-(--color-border) bg-(--color-card)/55 sticky top-0 h-[calc(100vh-4rem)] shrink-0">
-          <SidebarNav isProvider={user?.is_provider} logout={logout} />
+        {/* Desktop Sidebar with Toggle on Right Edge */}
+        <aside
+          className={`hidden md:flex relative flex-col border-r border-(--color-border) bg-(--color-card)/55 sticky top-0 h-[calc(100vh-4rem)] shrink-0 transition-all duration-300 ease-in-out ${
+            desktopCollapsed ? 'w-16' : 'w-64'
+          }`}
+        >
+          {/* Right-side Toggle Button */}
+          <button
+            onClick={() => setDesktopCollapsed((prev) => !prev)}
+            title={desktopCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            className="absolute -right-3 top-6 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-(--color-border) bg-(--color-card) text-(--color-muted-foreground) shadow-xs hover:text-(--color-foreground) hover:bg-(--color-muted) transition-colors cursor-pointer"
+          >
+            {desktopCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
+
+          <SidebarNav
+            isProvider={user?.is_provider}
+            logout={logout}
+            isCollapsed={desktopCollapsed}
+          />
         </aside>
 
         {mobileSidebarOpen && (
@@ -150,6 +257,7 @@ export default function DashboardLayout() {
                 isProvider={user?.is_provider}
                 onNavigate={() => setMobileSidebarOpen(false)}
                 logout={logout}
+                isCollapsed={false}
               />
             </div>
           </div>
