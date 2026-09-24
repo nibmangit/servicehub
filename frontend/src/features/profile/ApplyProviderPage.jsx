@@ -67,6 +67,7 @@ export default function ApplyProviderPage() {
     try {
       const skillsData = await profileApi.getSkills();
       setSkills(skillsData);
+      console.log("Loaded skills:", skillsData);
     } catch (err) {
       console.error("Failed to load skills", err);
       setError("Could not load available skills.");

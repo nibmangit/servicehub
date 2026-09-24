@@ -10,28 +10,28 @@ export const servicesApi = {
       }
     });
     const response = await api.get('services/', { params });
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
   getService: async (id) => {
     const response = await api.get(`services/${id}/`);
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
 
   getMyServices: async () => {
     const response = await api.get('services/mine/');
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
   createService: async (data) => {
     const response = await api.post('services/mine/', data);
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
   updateService: async (id, data) => {
     const response = await api.patch(`services/${id}/`, data);
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
   deleteService: async (id) => {
@@ -45,7 +45,7 @@ export const servicesApi = {
     const response = await api.post(`services/${serviceId}/images/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
   deleteServiceImage: async (imageId) => {

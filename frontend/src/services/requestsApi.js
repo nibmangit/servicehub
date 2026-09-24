@@ -4,23 +4,23 @@ export const requestsApi = {
   // POST /api/requests/  { service, description, preferred_date, address }
   createRequest: async (payload) => {
     const response = await api.post('requests/', payload);
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
   getRequests: async (filters = {}) => {
     const response = await api.get('requests/', { params: filters });
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
   // GET /api/requests/:id/
   getRequest: async (id) => {
     const response = await api.get(`requests/${id}/`);
-    return response.data;
+    return response.data || response.data.results || [];
   },
 
   // PATCH /api/requests/:id/status/  { status, otp_code?, rejection_reason? }
   updateStatus: async (id, payload) => {
     const response = await api.patch(`requests/${id}/status/`, payload);
-    return response.data;
+    return response.data || response.data.results || [];
   },
 };
