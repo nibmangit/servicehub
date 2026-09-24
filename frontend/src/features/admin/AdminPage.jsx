@@ -4,6 +4,8 @@ import {
 } from 'lucide-react';
 import AdminOverview from './sections/AdminOverview';
 import AdminApplications from './sections/AdminApplications';
+import AdminUsers from './sections/AdminUsers';
+import AdminCategoriesSkills from './sections/AdminCategoriesSkills';
 
 const SECTIONS = [
   { key: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -48,7 +50,8 @@ export default function AdminPage() {
       <div>
         {active === 'overview' && <AdminOverview />}
         {active === 'applications' && <AdminApplications />}
-        {/* Remaining sections wired in as we build each module */}
+        {active === 'users' && <AdminUsers />}
+        {active === 'categories' && <AdminCategoriesSkills />}
       </div>
     </div>
   );
