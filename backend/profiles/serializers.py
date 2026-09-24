@@ -51,13 +51,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', read_only=True)  
     is_customer = serializers.BooleanField(source='user.is_customer', read_only=True)
     is_provider = serializers.BooleanField(source='user.is_provider', read_only=True)
+    is_staff = serializers.BooleanField(source='user.is_staff', read_only=True)
     provider_status = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile 
-        fields = ['id', 'email', 'is_customer', 'is_provider', 'provider_status',
+        fields = ['id', 'email', 'is_customer', 'is_provider', 'is_staff', 'provider_status',
                   'full_name', 'phone', 'city', 'bio', 'avatar', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'is_customer', 'is_provider', 'provider_status', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'is_customer', 'is_provider', 'is_staff', 'provider_status', 'created_at', 'updated_at']
     
     def get_provider_status(self, obj):
         application = ProviderApplication.objects.filter(user=obj.user).first()

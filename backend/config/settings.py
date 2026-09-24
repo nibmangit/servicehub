@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'notifications',
     'chats',
     'dashboard',
+    'adminpanel',
     
     'identity',
 ]
