@@ -27,6 +27,9 @@ import ChatLayout from './features/chats/ChatLayout';
 import EmptyChatState from './features/chats/EmptyChatState';
 import ConversationDetailPage from './features/chats/ConversationDetailPage';
 
+import AdminRoute from './routes/AdminRoute';
+import AdminPage from './features/admin/AdminPage';
+
 export default function App() {
   return (
     <Routes>
@@ -83,6 +86,15 @@ export default function App() {
             <RoleRoute role="provider">
               <ServiceFormPage />
             </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
           }
         />
       </Route>
