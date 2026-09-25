@@ -26,6 +26,17 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Check if the request was made to an auth endpoint (login, register, or refresh)
+    const isAuthEndpoint = 
+      originalRequest.url?.includes('auth/login') ||
+      originalRequest.url?.includes('auth/register') ||
+      originalRequest.url?.includes('auth/refresh');
+
+    // If it's an auth request and fails, pass the error directly to the component (no refresh/redirect)
+    if (isAuthEndpoint) {
+      return Promise.reject(error);
+    }
+
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // Mark that we are trying a refresh
@@ -49,7 +60,7 @@ api.interceptors.response.use(
       } catch (refreshError) { 
         console.error("Refresh token expired. Logging out.");
         localStorage.clear();
-        window.location.href = "/";
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }

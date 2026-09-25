@@ -3,6 +3,7 @@ import { Star, Trash2 } from 'lucide-react';
 import { adminApi } from '../../../services/adminApi';
 import { usePaginatedResource } from '../../../lib/usePaginatedResource';
 import AdminModal from '../../../components/admin/AdminModal';
+import DeleteConfirmModal from '../../../components/common/DeleteConfirmModal';
 import LoadMoreButton from '../../../components/common/LoadMoreButton';
 import EmptyState from '../../../components/common/EmptyState';
 
@@ -13,7 +14,8 @@ export default function AdminReviews() {
     usePaginatedResource(adminApi.getReviews, { search: search || undefined });
 
   const [selected, setSelected] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [actionError, setActionError] = useState('');
 
   const openReview = (rev) => {
@@ -21,17 +23,17 @@ export default function AdminReviews() {
     setActionError('');
   };
 
-  const handleDelete = async () => {
-    if (!selected || !window.confirm('Delete this review permanently?')) return;
-    setActionLoading(true);
-    setActionError('');
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
     try {
-      await adminApi.deleteReview(selected.id);
+      await adminApi.deleteReview(deleting.id);
+      setDeleting(null);
       setSelected(null);
       goToPage(1);
     } catch (err) {
-      setActionError(err.response?.data?.detail || 'Could not delete review.');
-      setActionLoading(false);
+      setActionError(err.response?.data?.detail || 'Could not delete this review.');
+      setIsDeleting(false);
+      setDeleting(null);
     }
   };
 
@@ -57,7 +59,6 @@ export default function AdminReviews() {
         </div>
       ) : (
         <>
-          {/* Responsive Grid layout for reviews */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((rev) => (
               <button
@@ -72,7 +73,7 @@ export default function AdminReviews() {
                         <Star
                           key={i}
                           size={12}
-                          className={i < rev.rating ? 'fill-amber-400 text-amber-400' : 'text-(--color-muted-foreground)/30'}
+                          className={i < rev.rating ? 'fill-(--color-warning) text-(--color-warning)' : 'text-(--color-muted-foreground)/30'}
                         />
                       ))}
                     </div>
@@ -112,12 +113,10 @@ export default function AdminReviews() {
         footer={
           selected ? (
             <button
-              onClick={handleDelete}
-              disabled={actionLoading}
-              className="px-4 py-2.5 rounded-xl bg-(--color-destructive) text-white text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+              onClick={() => setDeleting(selected)}
+              className="px-4 py-2.5 rounded-xl bg-(--color-destructive) text-white text-xs font-semibold hover:opacity-90 transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <Trash2 size={14} />
-              {actionLoading ? 'Deleting...' : 'Delete Review'}
+              <Trash2 size={14} /> Delete Review
             </button>
           ) : null
         }
@@ -129,7 +128,7 @@ export default function AdminReviews() {
                 <Star
                   key={i}
                   size={16}
-                  className={i < selected.rating ? 'fill-amber-400 text-amber-400' : 'text-(--color-muted-foreground)/30'}
+                  className={i < selected.rating ? 'fill-(--color-warning) text-(--color-warning)' : 'text-(--color-muted-foreground)/30'}
                 />
               ))}
               <span className="ml-2 text-xs font-semibold text-(--color-foreground)">{selected.rating} out of 5</span>
@@ -165,6 +164,15 @@ export default function AdminReviews() {
           </div>
         )}
       </AdminModal>
+
+      <DeleteConfirmModal
+        isOpen={Boolean(deleting)}
+        title={`Delete review by ${deleting?.client_name}?`}
+        message={`This permanently deletes the ${deleting?.rating}-star review for "${deleting?.service_title}" and recalculates the service and provider's average rating.`}
+        onClose={() => !isDeleting && setDeleting(null)}
+        onConfirm={handleDeleteConfirm}
+        loading={isDeleting}
+      />
     </div>
   );
 }

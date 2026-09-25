@@ -3,6 +3,7 @@ import { Eye, EyeOff, Trash2, Star, MapPin, Tag } from 'lucide-react';
 import { adminApi } from '../../../services/adminApi';
 import { usePaginatedResource } from '../../../lib/usePaginatedResource';
 import AdminModal from '../../../components/admin/AdminModal';
+import DeleteConfirmModal from '../../../components/common/DeleteConfirmModal';
 import LoadMoreButton from '../../../components/common/LoadMoreButton';
 import EmptyState from '../../../components/common/EmptyState';
 
@@ -25,6 +26,9 @@ export default function AdminServices() {
   const [selected, setSelected] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState('');
+
+  const [deleting, setDeleting] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const openService = (service) => {
     setSelected(service);
@@ -51,17 +55,17 @@ export default function AdminServices() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selected || !window.confirm('Are you sure you want to delete this service listing?')) return;
-    setActionLoading(true);
-    setActionError('');
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
     try {
-      await adminApi.deleteService(selected.id);
+      await adminApi.deleteService(deleting.id);
+      setDeleting(null);
       setSelected(null);
       goToPage(1);
-    } catch (err) {
-      setActionError(err.response?.data?.detail || 'Could not delete this service.');
-      setActionLoading(false);
+    } catch {
+      alert('Could not delete this service. It may have requests tied to it.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -162,7 +166,7 @@ export default function AdminServices() {
           selected ? (
             <div className="flex items-center gap-2 w-full justify-end">
               <button
-                onClick={handleDelete}
+                onClick={() => setDeleting(selected)}
                 disabled={actionLoading}
                 className="px-4 py-2.5 rounded-xl bg-(--color-destructive)/15 text-(--color-destructive) text-xs font-semibold hover:bg-(--color-destructive)/20 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
               >
@@ -253,6 +257,15 @@ export default function AdminServices() {
           </div>
         )}
       </AdminModal>
+
+      <DeleteConfirmModal
+        isOpen={Boolean(deleting)}
+        title={`Delete "${deleting?.title}"?`}
+        message="Any existing requests tied to this service will keep their history, but the service link will be cleared (agreed price and description on past requests are unaffected)."
+        onClose={() => !isDeleting && setDeleting(null)}
+        onConfirm={handleDeleteConfirm}
+        loading={isDeleting}
+      />
     </div>
   );
 }

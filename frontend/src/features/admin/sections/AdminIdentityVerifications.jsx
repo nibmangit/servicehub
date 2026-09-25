@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Phone, MapPin, CreditCard } from 'lucide-react';
+import { Phone, MapPin, Mail } from 'lucide-react';
 import { adminApi } from '../../../services/adminApi';
 import { usePaginatedResource } from '../../../lib/usePaginatedResource';
 import AdminModal from '../../../components/admin/AdminModal';
@@ -10,7 +10,7 @@ const STATUS_FILTERS = [
   { key: '', label: 'All' },
   { key: 'verified', label: 'Verified' },
   { key: 'pending', label: 'Pending' },
-  { key: 'rejected', label: 'Rejected' },
+  { key: 'failed', label: 'Failed' },
 ];
 
 export default function AdminIdentityVerifications() {
@@ -28,8 +28,8 @@ export default function AdminIdentityVerifications() {
       case 'verified':
         return 'bg-emerald-500/15 text-emerald-500';
       case 'pending':
-        return 'bg-amber-500/15 text-amber-500';
-      case 'rejected':
+        return 'bg-(--color-warning)/15 text-(--color-warning)';
+      case 'failed':
         return 'bg-(--color-destructive)/15 text-(--color-destructive)';
       default:
         return 'bg-(--color-muted) text-(--color-foreground)';
@@ -64,7 +64,6 @@ export default function AdminIdentityVerifications() {
         </div>
       ) : (
         <>
-          {/* Responsive Grid layout for verifications */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((item) => (
               <button
@@ -75,15 +74,15 @@ export default function AdminIdentityVerifications() {
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-(--color-foreground) truncate">
-                      {item.citizen_name}
+                      {item.citizen_name || item.user_email || 'Unknown'}
                     </p>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize shrink-0 ${getStatusBadge(item.status)}`}>
                       {item.status}
                     </span>
                   </div>
                   <div className="flex flex-col gap-0.5 text-xs text-(--color-muted-foreground) truncate">
+                    <span className="truncate">Account: <strong className="text-(--color-foreground)">{item.user_email}</strong></span>
                     <span className="truncate">FIN: <strong className="text-(--color-foreground)">{item.fin}</strong></span>
-                    <span className="truncate">Provider: <strong className="uppercase text-(--color-foreground)">{item.provider}</strong></span>
                   </div>
                 </div>
 
@@ -107,11 +106,18 @@ export default function AdminIdentityVerifications() {
       <AdminModal
         isOpen={Boolean(selected)}
         onClose={() => setSelected(null)}
-        title={selected?.citizen_name}
+        title={selected?.citizen_name || 'Unmatched FIN'}
         subtitle={`FIN: ${selected?.fin}`}
       >
         {selected && (
           <div className="space-y-4 text-sm">
+            <div className="p-3 rounded-lg bg-(--color-muted) border border-(--color-border) text-xs">
+              <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">Account</p>
+              <p className="font-semibold text-(--color-foreground) flex items-center gap-1">
+                <Mail size={12} /> {selected.user_email}
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="p-3 rounded-lg bg-(--color-muted) border border-(--color-border)">
                 <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">Verification System</p>
@@ -123,19 +129,28 @@ export default function AdminIdentityVerifications() {
               </div>
             </div>
 
+            {selected.status === 'failed' ? (
+              <p className="text-xs text-(--color-muted-foreground) italic">
+                No matching Fayda citizen record was found for this FIN — verification failed.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">Phone</p>
+                  <p className="text-(--color-foreground) flex items-center gap-1">
+                    <Phone size={12} /> {selected.citizen_phone || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">City</p>
+                  <p className="text-(--color-foreground) flex items-center gap-1">
+                    <MapPin size={12} /> {selected.citizen_city || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">Phone</p>
-                <p className="text-(--color-foreground) flex items-center gap-1">
-                  <Phone size={12} /> {selected.citizen_phone}
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">City</p>
-                <p className="text-(--color-foreground) flex items-center gap-1">
-                  <MapPin size={12} /> {selected.citizen_city}
-                </p>
-              </div>
               <div>
                 <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">Verified At</p>
                 <p className="text-(--color-foreground)">

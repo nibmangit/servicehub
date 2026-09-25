@@ -4,6 +4,7 @@ from profiles.models import ProviderApplication
 from profiles.serializers import SkillSerializer
 from categories.serializers import CategorySerializer  # noqa — reused directly for admin CRUD
 from profiles.serializers import SkillSerializer as _SkillSerializer  # noqa — reused directly
+from identity.serializers import IdentityVerificationSerializer
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
@@ -51,3 +52,10 @@ class AdminProviderApplicationSerializer(serializers.ModelSerializer):
 
 class AdminApplicationRejectSerializer(serializers.Serializer):
     reason = serializers.CharField()
+    
+class AdminIdentityVerificationSerializer(IdentityVerificationSerializer):
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+
+    class Meta(IdentityVerificationSerializer.Meta):
+        fields = IdentityVerificationSerializer.Meta.fields + ["user_email"]
+        read_only_fields = fields

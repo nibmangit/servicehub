@@ -29,8 +29,8 @@ from requests.models import ServiceRequest
 from requests.serializers import ServiceRequestSerializer
 from reviews.models import Review
 from reviews.serializers import ReviewSerializer
-from identity.models import IdentityVerification
-from identity.serializers import IdentityVerificationSerializer
+from identity.models import IdentityVerification 
+from .serializers import AdminIdentityVerificationSerializer
 
 
 # ---------------- USERS ----------------
@@ -217,7 +217,7 @@ class AdminReviewListView(ListAPIView):
     permission_classes = [IsAdminStaff]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["request__customer__email", "request__service__title", "comment"]
-    ordering_fields = ["created_at", "rating"]
+    orderinAdminIdentityVerificationListViewg_fields = ["created_at", "rating"]
     ordering = ["-created_at"]
     queryset = Review.objects.select_related(
         "request", "request__customer", "request__customer__userprofile",
@@ -241,8 +241,9 @@ class AdminReviewDetailView(RetrieveDestroyAPIView):
 
 # ---------------- IDENTITY VERIFICATIONS (read-only, compliance visibility) ----------------
 
+
 class AdminIdentityVerificationListView(ListAPIView):
-    serializer_class = IdentityVerificationSerializer
+    serializer_class = AdminIdentityVerificationSerializer  # was IdentityVerificationSerializer
     permission_classes = [IsAdminStaff]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["status"]

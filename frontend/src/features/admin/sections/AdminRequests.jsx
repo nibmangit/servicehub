@@ -10,7 +10,9 @@ const STATUS_FILTERS = [
   { key: '', label: 'All' },
   { key: 'PENDING', label: 'Pending' },
   { key: 'ACCEPTED', label: 'Accepted' },
+  { key: 'IN_PROGRESS', label: 'In Progress' },
   { key: 'COMPLETED', label: 'Completed' },
+  { key: 'REJECTED', label: 'Rejected' },
   { key: 'CANCELLED', label: 'Cancelled' },
 ];
 
@@ -31,7 +33,7 @@ export default function AdminRequests() {
       case 'COMPLETED':
         return 'bg-emerald-500/15 text-emerald-500';
       case 'PENDING':
-        return 'bg-amber-500/15 text-amber-500';
+        return 'bg-(--color-warning)/15 text-(--color-warning)';
       case 'CANCELLED':
       case 'REJECTED':
         return 'bg-(--color-destructive)/15 text-(--color-destructive)';
@@ -77,7 +79,6 @@ export default function AdminRequests() {
         </div>
       ) : (
         <>
-          {/* Responsive Grid layout for requests */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((r) => (
               <button
@@ -101,7 +102,9 @@ export default function AdminRequests() {
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-(--color-border)/60 text-xs shrink-0">
-                  <p className="font-semibold text-(--color-primary)">Agreed: ${r.agreed_price}</p>
+                  <p className="font-semibold text-(--color-primary)">
+                    {r.agreed_price != null ? `${Number(r.agreed_price).toLocaleString()} ETB` : 'N/A'}
+                  </p>
                   <p className="text-(--color-muted-foreground)">{new Date(r.created_at).toLocaleDateString()}</p>
                 </div>
               </button>
@@ -161,7 +164,9 @@ export default function AdminRequests() {
               </div>
               <div>
                 <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">Agreed Price</p>
-                <p className="text-(--color-foreground) font-semibold">${selected.agreed_price}</p>
+                <p className="text-(--color-foreground) font-semibold">
+                  {selected.agreed_price != null ? `${Number(selected.agreed_price).toLocaleString()} ETB` : 'N/A'}
+                </p>
               </div>
               <div>
                 <p className="font-semibold text-(--color-muted-foreground) uppercase tracking-wider mb-0.5">Status</p>
@@ -169,13 +174,22 @@ export default function AdminRequests() {
               </div>
             </div>
 
+            {selected.status === 'REJECTED' && selected.rejection_reason && (
+              <div className="p-3 rounded-lg bg-(--color-destructive)/10 border border-(--color-destructive)/20 text-xs space-y-1">
+                <p className="font-semibold text-(--color-destructive) uppercase tracking-wider">Rejection Reason</p>
+                <p className="text-(--color-foreground)">{selected.rejection_reason}</p>
+              </div>
+            )}
+
             {selected.review && (
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs space-y-1">
-                <div className="flex items-center gap-1 font-semibold text-amber-500">
-                  <Star size={12} className="fill-amber-400 text-amber-400" />
+              <div className="p-3 rounded-lg bg-(--color-warning)/10 border border-(--color-warning)/20 text-xs space-y-1">
+                <div className="flex items-center gap-1 font-semibold text-(--color-warning)">
+                  <Star size={12} className="fill-current" />
                   Attached Review ({selected.review.rating}/5)
                 </div>
-                <p className="text-(--color-foreground) italic">"{selected.review.comment}"</p>
+                {selected.review.comment && (
+                  <p className="text-(--color-foreground) italic">"{selected.review.comment}"</p>
+                )}
               </div>
             )}
           </div>

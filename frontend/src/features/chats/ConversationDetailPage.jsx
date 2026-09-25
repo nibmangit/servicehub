@@ -59,7 +59,7 @@ export default function ConversationDetailPage() {
 
     const connect = () => {
       if (cancelled) return;
-      const socket = new WebSocket(buildWsUrl(`ws/chats/${id}/`, { token }));
+      const socket = new WebSocket(buildWsUrl(`ws/chat/${id}/`, { token }));
       socketRef.current = socket;
 
       socket.onmessage = (event) => {
