@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -10,6 +11,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'password', 'password_confirm']
+        
+    def validate_password(self, value):
+        if len(value) < 6:
+            raise serializers.ValidationError("Password must be at least 6 characters long.")
+        if not re.search(r'[a-zA-Z]', value):
+            raise serializers.ValidationError("Password must contain at least one letter.")
+        if not re.search(r'[0-9]', value):
+            raise serializers.ValidationError("Password must contain at least one number.")
+        return value
 
     def validate(self, attrs):
         # Business Rule: Passwords must match exactly

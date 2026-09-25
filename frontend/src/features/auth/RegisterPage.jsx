@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { isPasswordValid } from '../../lib/validators';
+import PasswordStrengthIndicator from '../../components/auth/PasswordStrengthIndicator';
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({ email: '', password: '', password_confirm: ''});
+  const [formData, setFormData] = useState({ email: '', password: '', password_confirm: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const { register } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -19,22 +19,40 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSubmitting(true);
 
+    // Client-side validation checks
+    if (!isPasswordValid(formData.password)) {
+      setError('Password does not meet the security requirements.');
+      return;
+    }
+
+    if (formData.password !== formData.password_confirm) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setSubmitting(true);
     const result = await register(formData);
     setSubmitting(false);
 
     if (result.success) {
       navigate('/dashboard');
     } else {
-      setError(typeof result.error === 'string' ? result.error : JSON.stringify(result.error));
+      const errData = result.error;
+      if (typeof errData === 'string') {
+        setError(errData);
+      } else if (typeof errData === 'object') {
+        // Extract array/object error messages from DRF response
+        const messages = Object.values(errData).flat().join(' ');
+        setError(messages || 'Registration failed. Please check your inputs.');
+      } else {
+        setError('Registration failed. Please try again.');
+      }
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-(--color-background) transition-colors duration-300">
-    
-
       <div className="w-full max-w-md bg-(--color-card) p-8 rounded-2xl shadow-elevated border border-(--color-border)">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-(--color-primary)">Create Account</h1>
@@ -48,7 +66,6 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <div>
             <label className="block text-sm font-medium mb-1 text-(--color-foreground)">Email Address</label>
             <input 
@@ -73,10 +90,14 @@ export default function RegisterPage() {
               className="w-full px-4 py-2.5 rounded-(--radius-md) bg-(--color-input) border border-(--color-border) text-(--color-foreground) focus:outline-none focus:ring-2 focus:ring-(--color-ring)"
               placeholder="••••••••"
             />
+            {/* Live checklist indicator */}
+            {formData.password && (
+              <PasswordStrengthIndicator password={formData.password} />
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1 text-(--color-foreground)">Password</label>
+            <label className="block text-sm font-medium mb-1 text-(--color-foreground)">Confirm Password</label>
             <input 
               type="password" 
               name="password_confirm"
