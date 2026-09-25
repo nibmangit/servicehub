@@ -20,7 +20,7 @@ export default function ChatLayout() {
     });
   };
 
-  // Close sidebar automatically when a conversation route (`id`) changes
+  // Close sidebar on desktop when selecting a conversation route
   useEffect(() => {
     if (id) {
       setCollapsed(true);
@@ -28,7 +28,7 @@ export default function ChatLayout() {
     }
   }, [id]);
 
-  // Close sidebar on click outside
+  // Handle outside click detection (Desktop overlay only)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -49,26 +49,28 @@ export default function ChatLayout() {
 
   return (
     <div className="-m-4 md:-m-8 h-[calc(100vh-4rem)] flex overflow-hidden relative">
-      {/* Sidebar container with ref attached */}
-      <div ref={sidebarRef}>
-        {/* Sidebar — normal flex item on mobile, floating overlay on md+ */}
+      {/* Sidebar Wrapper */}
+      <div 
+        ref={sidebarRef} 
+        className={`${
+          hasSelectedConversation ? 'hidden md:block' : 'block'
+        } w-full md:w-auto h-full`}
+      >
+        {/* Sidebar element */}
         <aside
           className={`
-            ${hasSelectedConversation ? 'hidden md:flex' : 'flex'}
-            w-full
-            md:absolute md:top-0 md:left-0 md:h-full md:z-20
-            border-r border-(--color-border) bg-(--color-card)
-            flex-col overflow-hidden
+            w-full h-full flex flex-col overflow-hidden bg-(--color-card)
+            md:absolute md:top-0 md:left-0 md:z-20 md:border-r md:border-(--color-border)
             transition-all duration-300 ease-in-out
             ${collapsed ? 'md:w-0 md:border-r-0' : 'md:w-64 lg:w-80 md:shadow-elevated'}
           `}
         >
-          <div className="h-full w-full md:w-64 lg:w-80 shrink-0">
+          <div className="h-full w-full flex-1 min-h-0 overflow-y-auto">
             <ConversationSidebar />
           </div>
         </aside>
 
-        {/* Clean, high-visibility toggle button — desktop only */}
+        {/* Desktop Toggle Button */}
         <button
           onClick={toggleCollapsed}
           className={`
@@ -91,9 +93,9 @@ export default function ChatLayout() {
         </button>
       </div>
 
-      {/* Detail pane — takes full width on desktop */}
+      {/* Main Chat Detail Pane */}
       <div
-        className={`flex-1 min-w-0 flex-col overflow-hidden ${
+        className={`flex-1 min-w-0 flex flex-col h-full overflow-hidden ${
           hasSelectedConversation ? 'flex' : 'hidden md:flex'
         }`}
       >
