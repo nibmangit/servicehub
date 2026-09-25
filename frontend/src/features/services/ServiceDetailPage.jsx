@@ -110,7 +110,7 @@ export default function ServiceDetailPage() {
       navigate('/login');
       return;
     } 
-    navigate(`/chats?provider=${service.provider_id || service.provider_email}`);
+    navigate(`/chats`);
   };
 
   const handleRequestClick = () => {
@@ -341,19 +341,19 @@ export default function ServiceDetailPage() {
                   ) : checkingExisting ? (
                     <div className="h-16 rounded-xl bg-(--color-muted) animate-pulse" />
                   ) : existingRequest ? (
-   <div className="p-4 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 text-amber-900 dark:text-amber-200 text-sm border border-amber-500/30 dark:border-amber-500/40 space-y-3 shadow-soft">
-    <div className="flex items-center gap-2 font-semibold">
-      <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-      <span className="text-amber-900 dark:text-amber-200">Active Request Imminent</span>
-    </div>
-    <p className="text-xs text-amber-800/80 dark:text-amber-200/80">You have a pending/active booking for this service.</p>
-    <Link 
-      to={`/requests/${existingRequest.id}`} 
-      className="block text-center w-full py-2 rounded-lg bg-(--color-card) font-semibold text-xs text-(--color-card-foreground) border border-amber-500/30 hover:bg-(--color-muted) transition-colors shadow-xs"
-    >
-      View Request Details
-    </Link>
-  </div>
+                <div className="p-4 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 text-amber-900 dark:text-amber-200 text-sm border border-amber-500/30 dark:border-amber-500/40 space-y-3 shadow-soft">
+                  <div className="flex items-center gap-2 font-semibold">
+                    <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span className="text-amber-900 dark:text-amber-200">Active Request Imminent</span>
+                  </div>
+                  <p className="text-xs text-amber-800/80 dark:text-amber-200/80">You have a pending/active booking for this service.</p>
+                  <Link 
+                    to={`/requests/${existingRequest.id}`} 
+                    className="block text-center w-full py-2 rounded-lg bg-(--color-card) font-semibold text-xs text-(--color-card-foreground) border border-amber-500/30 hover:bg-(--color-muted) transition-colors shadow-xs"
+                  >
+                    View Request Details
+                  </Link>
+                </div>
                   ) : (
                     <div className="space-y-3">
                       <button
